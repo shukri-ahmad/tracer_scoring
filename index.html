@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAKEROBOT TRACER - Live Standings</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --red-gear: #e72429;
+            --blue-gear: #1f4179;
+            --blitz-grad: linear-gradient(90deg, #1f4179 0%, #9e58cc 100%);
+            --bg-dark: #090c10;
+            --panel-bg: #111822;
+            --border-glow: #1f4179;
+            --text-main: #c9d1d9;
+            --neon-green: #00ff88;
+        }
+
+        body { font-family: 'Rajdhani', sans-serif; background-color: var(--bg-dark); color: var(--text-main); margin: 0; padding: 20px; background-image: radial-gradient(circle at 50% 0%, rgba(31, 65, 121, 0.2) 0%, transparent 50%); }
+        .container { max-width: 1000px; margin: 0 auto; background: var(--panel-bg); padding: 20px 30px; border-radius: 12px; box-shadow: 0 0 20px rgba(0,0,0,0.8); border: 1px solid var(--border-glow); margin-bottom: 30px; }
+        
+        h1, h2 { font-family: 'Orbitron', sans-serif; text-align: center; color: white; letter-spacing: 1px; text-transform: uppercase; }
+        .logo-container { text-align: center; margin-bottom: 10px; }
+        .logo-container img { max-width: 250px; filter: drop-shadow(0 0 10px rgba(255,255,255,0.1)); }
+        
+        .header-links { text-align: right; margin-bottom: 10px; }
+        .header-links a { color: #9e58cc; text-decoration: none; font-weight: bold; font-family: 'Orbitron', sans-serif; font-size: 14px; text-transform: uppercase; transition: color 0.3s;}
+        .header-links a:hover { color: var(--neon-green); text-shadow: 0 0 8px var(--neon-green); }
+        
+        .game-selector { text-align: center; margin-bottom: 25px; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 8px; border: 1px solid #30363d; }
+        .game-selector select { padding: 10px; font-size: 16px; border-radius: 4px; font-weight: bold; width: 50%; background: #0d1117; color: white; border: 1px solid var(--border-glow); font-family: 'Rajdhani', sans-serif; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 18px; }
+        th, td { padding: 12px; text-align: center; border-bottom: 1px solid #30363d; }
+        th { background: var(--blitz-grad); color: white; font-family: 'Orbitron', sans-serif; font-size: 13px; letter-spacing: 1px; }
+        
+        .rank-1 { background: rgba(158, 88, 204, 0.15) !important; }
+        .rank-1 td { color: #fff; font-weight: bold; text-shadow: 0 0 5px #9e58cc; }
+        
+        .team-name { font-weight: bold; text-align: left; padding-left: 20px; font-size: 1.2em; color: white;}
+        .time-font { font-family: 'Orbitron', sans-serif; }
+        
+        .total-time-box { font-size: 1.4em; font-weight: bold; background: #0d1117; border: 1px solid var(--neon-green); border-radius: 4px; display: inline-block; padding: 5px 15px; color: var(--neon-green); text-shadow: 0 0 8px rgba(0,255,136,0.4);}
+        .pending-box { font-size: 1em; color: #6e7681; font-style: italic; }
+        
+        .mod-chip { font-size: 12px; padding: 2px 6px; border-radius: 4px; font-family: 'Orbitron', sans-serif; font-weight: bold;}
+        .mod-green { background: rgba(39, 174, 96, 0.2); color: #2ecc71; border: 1px solid #27ae60;}
+        .mod-red { background: rgba(231, 76, 60, 0.2); color: #e74c3c; border: 1px solid #c0392b;}
+
+        .formula-text { text-align: center; font-size: 14px; color: #8b949e; margin-top: -10px; font-weight: bold;}
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-links"><a href="login.html">[ ADMIN ACCESS ]</a></div>
+    
+    <div class="logo-container">
+        <img src="[FINAL] LOGO MAKEROBOT2026 (9)-Photoroom.png" alt="Makerobot Tracer Logo">
+        <h2 style="margin-top: 5px; font-size: 28px;">TRACER LEADERBOARD</h2>
+    </div>
+    
+    <div class="game-selector">
+        <label for="publicGameSelect" style="font-weight: bold; display: block; margin-bottom: 8px; color: #8b949e; font-family: 'Orbitron', sans-serif;">SELECT CATEGORY</label>
+        <select id="publicGameSelect" onchange="loadSelectedGame()"><option>INITIALIZING...</option></select>
+    </div>
+
+    <p class="formula-text">TOTAL = CODE TIME + RACE TIME - (POINTS x 10s) + (PENALTIES x 10s)</p>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>RANK</th>
+                <th>TEAM</th>
+                <th>CODE TIME</th>
+                <th>RACE TIME</th>
+                <th>MODIFIERS</th>
+                <th>TOTAL TIME</th>
+            </tr>
+        </thead>
+        <tbody id="leaderboard-body"><tr><td colspan="6">AWAITING DATA...</td></tr></tbody>
+    </table>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getFirestore, collection, onSnapshot, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCGERiYn2mKRHH4O3DSVunFeIQBYn4QjBM",
+    authDomain: "makerobot-blitz.firebaseapp.com",
+    projectId: "makerobot-blitz",
+    storageBucket: "makerobot-blitz.firebasestorage.app",
+    messagingSenderId: "343992286368",
+    appId: "1:343992286368:web:e5f99c7df490c1d6369dc5"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  let unsubTeams = null;
+
+  function formatTime(ms) {
+      if(ms === null || ms === undefined || ms < 0) return "--:--.--";
+      let date = new Date(ms);
+      let m = String(date.getUTCMinutes()).padStart(2, '0');
+      let s = String(date.getUTCSeconds()).padStart(2, '0');
+      let msStr = String(Math.floor(date.getUTCMilliseconds() / 10)).padStart(2, '0');
+      return `${m}:${s}.${msStr}`;
+  }
+
+  async function loadGamesList() {
+      const selectElement = document.getElementById("publicGameSelect");
+      const gamesSnap = await getDocs(collection(db, "games"));
+      selectElement.innerHTML = "";
+      if(gamesSnap.empty) return selectElement.innerHTML = "<option>NO GAMES FOUND</option>";
+
+      gamesSnap.forEach(doc => { selectElement.innerHTML += `<option value="${doc.id}">${doc.data().name}</option>`; });
+      loadSelectedGame();
+  }
+  loadGamesList();
+
+  window.loadSelectedGame = function() {
+      const gameId = document.getElementById("publicGameSelect").value;
+      if(!gameId || gameId === "NO GAMES FOUND") return;
+
+      if(unsubTeams) unsubTeams();
+
+      unsubTeams = onSnapshot(collection(db, "games", gameId, "teams"), (snapshot) => {
+        let teams = [];
+        snapshot.forEach(doc => teams.push({ id: doc.id, ...doc.data() }));
+        
+        // Sort: Finished teams first (lowest total time), then Pending teams at the bottom
+        teams.sort((a, b) => {
+            if(a.totalTimeMs === null && b.totalTimeMs === null) return a.name.localeCompare(b.name);
+            if(a.totalTimeMs === null) return 1;
+            if(b.totalTimeMs === null) return -1;
+            return a.totalTimeMs - b.totalTimeMs;
+        });
+        
+        const tbody = document.getElementById("leaderboard-body");
+        tbody.innerHTML = ""; 
+        if (teams.length === 0) return tbody.innerHTML = "<tr><td colspan='6'>NO TEAMS REGISTERED.</td></tr>";
+
+        teams.forEach((team, index) => {
+          
+          let codeStr = team.codingTimeMs !== null ? formatTime(team.codingTimeMs) : "--:--.--";
+          let raceStr = team.raceTimeMs !== null ? formatTime(team.raceTimeMs) : "--:--.--";
+          
+          let modHtml = "";
+          if(team.points > 0) modHtml += `<span class="mod-chip mod-green">-${team.points * 10}s</span> `;
+          if(team.penalties > 0) modHtml += `<span class="mod-chip mod-red">+${team.penalties * 10}s</span>`;
+          if(!modHtml) modHtml = `<span style="color:#6e7681">-</span>`;
+
+          let totalHtml = team.totalTimeMs !== null 
+              ? `<span class="total-time-box time-font">${formatTime(team.totalTimeMs)}</span>` 
+              : `<span class="pending-box">IN PROGRESS</span>`;
+
+          tbody.innerHTML += `
+            <tr class="${index === 0 && team.totalTimeMs !== null ? 'rank-1' : ''}">
+              <td class="time-font" style="font-size: 1.2em;">${index + 1}</td>
+              <td class="team-name">${team.name}</td>
+              <td class="time-font" style="color:#8b949e">${codeStr}</td>
+              <td class="time-font" style="color:#8b949e">${raceStr}</td>
+              <td>${modHtml}</td>
+              <td>${totalHtml}</td>
+            </tr>`;
+        });
+      });
+  };
+</script>
+
+</body>
+</html>
