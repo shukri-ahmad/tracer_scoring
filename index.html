@@ -9,7 +9,8 @@
         :root {
             --red-gear: #e72429;
             --blue-gear: #1f4179;
-            --blitz-grad: linear-gradient(90deg, #1f4179 0%, #9e58cc 100%);
+            --tracer-grad: linear-gradient(90deg, #5c4300 0%, #e6a800 100%);
+            --gold-accent: #e6a800;
             --bg-dark: #090c10;
             --panel-bg: #111822;
             --border-glow: #1f4179;
@@ -22,10 +23,10 @@
         
         h1, h2 { font-family: 'Orbitron', sans-serif; text-align: center; color: white; letter-spacing: 1px; text-transform: uppercase; }
         .logo-container { text-align: center; margin-bottom: 10px; }
-        .logo-container img { max-width: 250px; filter: drop-shadow(0 0 10px rgba(255,255,255,0.1)); }
+        .logo-container img { max-width: 250px; filter: drop-shadow(0 0 10px rgba(230,168,0,0.15)); }
         
         .header-links { text-align: right; margin-bottom: 10px; }
-        .header-links a { color: #9e58cc; text-decoration: none; font-weight: bold; font-family: 'Orbitron', sans-serif; font-size: 14px; text-transform: uppercase; transition: color 0.3s;}
+        .header-links a { color: var(--gold-accent); text-decoration: none; font-weight: bold; font-family: 'Orbitron', sans-serif; font-size: 14px; text-transform: uppercase; transition: color 0.3s;}
         .header-links a:hover { color: var(--neon-green); text-shadow: 0 0 8px var(--neon-green); }
         
         .game-selector { text-align: center; margin-bottom: 25px; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 8px; border: 1px solid #30363d; }
@@ -33,10 +34,10 @@
 
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 18px; }
         th, td { padding: 12px; text-align: center; border-bottom: 1px solid #30363d; }
-        th { background: var(--blitz-grad); color: white; font-family: 'Orbitron', sans-serif; font-size: 13px; letter-spacing: 1px; }
+        th { background: var(--tracer-grad); color: white; font-family: 'Orbitron', sans-serif; font-size: 13px; letter-spacing: 1px; }
         
-        .rank-1 { background: rgba(158, 88, 204, 0.15) !important; }
-        .rank-1 td { color: #fff; font-weight: bold; text-shadow: 0 0 5px #9e58cc; }
+        .rank-1 { background: rgba(230, 168, 0, 0.15) !important; }
+        .rank-1 td { color: #fff; font-weight: bold; text-shadow: 0 0 5px var(--gold-accent); }
         
         .team-name { font-weight: bold; text-align: left; padding-left: 20px; font-size: 1.2em; color: white;}
         .time-font { font-family: 'Orbitron', sans-serif; }
@@ -57,7 +58,7 @@
     <div class="header-links"><a href="login.html">[ ADMIN ACCESS ]</a></div>
     
     <div class="logo-container">
-        <img src="[FINAL] LOGO MAKEROBOT2026 (9)-Photoroom.png" alt="Makerobot Tracer Logo">
+        <img src="[FINAL] LOGO MAKEROBOT2026 (8)-Photoroom.png" alt="Makerobot Tracer Logo">
         <h2 style="margin-top: 5px; font-size: 28px;">TRACER LEADERBOARD</h2>
     </div>
     
@@ -112,7 +113,6 @@
 
   async function loadGamesList() {
       const selectElement = document.getElementById("publicGameSelect");
-      // CHANGED FROM "games" TO "tracer_games"
       const gamesSnap = await getDocs(collection(db, "tracer_games"));
       selectElement.innerHTML = "";
       if(gamesSnap.empty) return selectElement.innerHTML = "<option>NO GAMES FOUND</option>";
@@ -128,7 +128,6 @@
 
       if(unsubTeams) unsubTeams();
 
-      // CHANGED FROM "games" TO "tracer_games"
       unsubTeams = onSnapshot(collection(db, "tracer_games", gameId, "teams"), (snapshot) => {
         let teams = [];
         snapshot.forEach(doc => teams.push({ id: doc.id, ...doc.data() }));
