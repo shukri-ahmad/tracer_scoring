@@ -46,6 +46,7 @@
         button.btn-green { background-color: #27ae60; color: white; }
         button.btn-gray { background-color: #484f58; color: #c9d1d9; cursor: not-allowed; }
         button.btn-manage { background-color: #f39c12; padding: 5px 10px; font-size: 12px; color: black; }
+        button.btn-restart { background-color: #9e58cc; padding: 5px 10px; font-size: 12px; }
         .logout { background-color: transparent; border: 1px solid var(--red-gear); color: var(--red-gear); font-size: 12px; padding: 5px 10px;}
         .logout:hover { background-color: var(--red-gear); color: white;}
         
@@ -154,7 +155,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-  import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCGERiYn2mKRHH4O3DSVunFeIQBYn4QjBM",
@@ -202,6 +203,7 @@
       return `${m}:${s}.${msStr}`;
   }
 
+  // --- GAME MANAGEMENT ---
   onSnapshot(collection(db, "tracer_games"), (snapshot) => {
       const tbody = document.getElementById("games-list-body");
       tbody.innerHTML = "";
@@ -209,10 +211,16 @@
       snapshot.forEach(docSnap => {
           const game = docSnap.data();
           allGamesData[docSnap.id] = game;
+          
+          let statusBadge = "";
+          if(game.isRaceLocked) statusBadge = `<span style="color:var(--red-gear); font-size:12px; margin-left: 8px;">[CONCLUDED]</span>`;
+          else if(game.codingStartTimestamp || game.isCodingLocked) statusBadge = `<span style="color:var(--gold-accent); font-size:12px; margin-left: 8px;">[IN PROGRESS]</span>`;
+
           tbody.innerHTML += `<tr>
-              <td class="team-name" style="font-family: 'Orbitron', sans-serif;">${game.name}</td>
+              <td class="team-name" style="font-family: 'Orbitron', sans-serif;">${game.name} ${statusBadge}</td>
               <td>
                   <button class="btn-primary" style="padding: 5px 10px; font-size:12px;" onclick="selectGame('${docSnap.id}')">SELECT</button>
+                  <button class="btn-restart" onclick="restartGame('${docSnap.id}', '${game.name}')">REBOOT</button>
                   <button class="btn-red" onclick="deleteGame('${docSnap.id}', '${game.name}')">DEL</button>
               </td>
           </tr>`;
@@ -234,6 +242,36 @@
           if(currentGameId === id) currentGameId = null;
           await deleteDoc(doc(db, "tracer_games", id));
       }
+  };
+
+  // REBOOT (RESTART) GAME
+  window.restartGame = async function(id, name) {
+      if(!confirm(`⚠️ SYSTEM OVERRIDE: REBOOT "${name}"?\n\nAll coding times, race times, and modifiers will be zeroed out. Team units will remain in the roster.`)) return;
+
+      // 1. Reset Game Document Locks & Timers
+      await updateDoc(doc(db, "tracer_games", id), {
+          codingStartTimestamp: null,
+          isCodingLocked: false,
+          isRaceLocked: false
+      });
+
+      // 2. Wipe times and modifiers for all registered teams
+      const teamsSnap = await getDocs(collection(db, "tracer_games", id, "teams"));
+      const resetPromises = [];
+      teamsSnap.forEach(tDoc => {
+          resetPromises.push(updateDoc(doc(db, "tracer_games", id, "teams", tDoc.id), {
+              codingTimeMs: null,
+              raceStartTimestamp: null,
+              raceTimeMs: null,
+              points: 0,
+              penalties: 0,
+              totalTimeMs: null
+          }));
+      });
+      await Promise.all(resetPromises);
+
+      alert(`SYSTEM REBOOTED: "${name}"\nAll time data wiped. Unit roster preserved.`);
+      selectGame(id);
   };
 
   window.selectGame = function(id) {
@@ -408,7 +446,6 @@
       
       const isRaceLocked = currentGameData && currentGameData.isRaceLocked;
 
-      // Lock UI Banners & Finish Button
       if (isRaceLocked) {
           document.getElementById("raceLockedUI").style.display = "block";
           document.getElementById("raceInfoMsg").style.display = "none";
@@ -446,7 +483,6 @@
               raceControls = `<button class="btn-primary" style="padding: 5px 15px;" onclick="startTeamRace('${team.id}')">▶ START</button>`;
           }
 
-          // Modifier Buttons disabled state
           const disMod = isRaceLocked ? "disabled style='opacity:0.5; cursor:not-allowed;'" : "";
 
           tbody.innerHTML += `<tr>
