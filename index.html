@@ -21,7 +21,7 @@
         body { font-family: 'Rajdhani', sans-serif; background-color: var(--bg-dark); color: var(--text-main); margin: 0; padding: 20px; background-image: radial-gradient(circle at 50% 0%, rgba(31, 65, 121, 0.2) 0%, transparent 50%); }
         .container { max-width: 1000px; margin: 0 auto; background: var(--panel-bg); padding: 20px 30px; border-radius: 12px; box-shadow: 0 0 20px rgba(0,0,0,0.8); border: 1px solid var(--border-glow); margin-bottom: 30px; }
         
-        h1, h2 { font-family: 'Orbitron', sans-serif; text-align: center; color: white; letter-spacing: 1px; text-transform: uppercase; }
+        h1, h2, h3 { font-family: 'Orbitron', sans-serif; text-align: center; color: white; letter-spacing: 1px; text-transform: uppercase; margin-top: 0;}
         .logo-container { text-align: center; margin-bottom: 10px; }
         .logo-container img { max-width: 250px; filter: drop-shadow(0 0 10px rgba(230,168,0,0.15)); }
         
@@ -32,24 +32,28 @@
         .game-selector { text-align: center; margin-bottom: 25px; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 8px; border: 1px solid #30363d; }
         .game-selector select { padding: 10px; font-size: 16px; border-radius: 4px; font-weight: bold; width: 50%; background: #0d1117; color: white; border: 1px solid var(--border-glow); font-family: 'Rajdhani', sans-serif; }
 
+        /* Global Timer Styles */
+        .global-timer-box { text-align: center; background: #0d1117; padding: 20px; border: 2px solid var(--border-glow); border-radius: 8px; margin-bottom: 25px; display: none; }
+        .global-timer-display { font-size: 4em; font-family: 'Orbitron', sans-serif; color: var(--neon-green); text-shadow: 0 0 15px rgba(0,255,136,0.5); margin: 10px 0;}
+
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 18px; }
-        th, td { padding: 12px; text-align: center; border-bottom: 1px solid #30363d; }
+        th, td { padding: 15px 12px; text-align: center; border-bottom: 1px solid #30363d; vertical-align: middle;}
         th { background: var(--tracer-grad); color: white; font-family: 'Orbitron', sans-serif; font-size: 13px; letter-spacing: 1px; }
         
         .rank-1 { background: rgba(230, 168, 0, 0.15) !important; }
         .rank-1 td { color: #fff; font-weight: bold; text-shadow: 0 0 5px var(--gold-accent); }
         
         .team-name { font-weight: bold; text-align: left; padding-left: 20px; font-size: 1.2em; color: white;}
-        .time-font { font-family: 'Orbitron', sans-serif; }
+        .time-font { font-family: 'Orbitron', sans-serif; font-size: 1.1em;}
         
-        .total-time-box { font-size: 1.4em; font-weight: bold; background: #0d1117; border: 1px solid var(--neon-green); border-radius: 4px; display: inline-block; padding: 5px 15px; color: var(--neon-green); text-shadow: 0 0 8px rgba(0,255,136,0.4);}
+        .total-time-box { font-size: 1.4em; font-weight: bold; background: #0d1117; border: 1px solid var(--neon-green); border-radius: 4px; display: inline-block; padding: 8px 15px; color: var(--neon-green); text-shadow: 0 0 8px rgba(0,255,136,0.4);}
         .pending-box { font-size: 1em; color: #6e7681; font-style: italic; }
         
-        .mod-chip { font-size: 12px; padding: 2px 6px; border-radius: 4px; font-family: 'Orbitron', sans-serif; font-weight: bold;}
+        .mod-chip { font-size: 11px; padding: 2px 6px; border-radius: 4px; font-family: 'Orbitron', sans-serif; font-weight: bold; margin: 0 3px;}
         .mod-green { background: rgba(39, 174, 96, 0.2); color: #2ecc71; border: 1px solid #27ae60;}
         .mod-red { background: rgba(231, 76, 60, 0.2); color: #e74c3c; border: 1px solid #c0392b;}
 
-        .formula-text { text-align: center; font-size: 14px; color: #8b949e; margin-top: -10px; font-weight: bold;}
+        .formula-text { text-align: center; font-size: 14px; color: #8b949e; margin-top: -10px; margin-bottom: 20px; font-weight: bold;}
     </style>
 </head>
 <body>
@@ -67,6 +71,12 @@
         <select id="publicGameSelect" onchange="loadSelectedGame()"><option>INITIALIZING...</option></select>
     </div>
 
+    <!-- LIVE GLOBAL CODING TIMER -->
+    <div class="global-timer-box" id="publicTimerBox">
+        <h3 style="color: var(--gold-accent);">GLOBAL CODING TIMER</h3>
+        <div id="publicGlobalTimer" class="global-timer-display">00:00.00</div>
+    </div>
+
     <p class="formula-text">TOTAL = CODE TIME + RACE TIME - (POINTS x 10s) + (PENALTIES x 10s)</p>
     
     <table>
@@ -75,18 +85,17 @@
                 <th>RANK</th>
                 <th>TEAM</th>
                 <th>CODE TIME</th>
-                <th>RACE TIME</th>
-                <th>MODIFIERS</th>
+                <th>RACE TIME (MODS)</th>
                 <th>TOTAL TIME</th>
             </tr>
         </thead>
-        <tbody id="leaderboard-body"><tr><td colspan="6">AWAITING DATA...</td></tr></tbody>
+        <tbody id="leaderboard-body"><tr><td colspan="5">AWAITING DATA...</td></tr></tbody>
     </table>
 </div>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getFirestore, collection, onSnapshot, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { getFirestore, collection, doc, onSnapshot, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCGERiYn2mKRHH4O3DSVunFeIQBYn4QjBM",
@@ -101,6 +110,8 @@
   const db = getFirestore(app);
 
   let unsubTeams = null;
+  let unsubGame = null;
+  let publicTimerInterval = null;
 
   function formatTime(ms) {
       if(ms === null || ms === undefined || ms < 0) return "--:--.--";
@@ -117,7 +128,7 @@
       selectElement.innerHTML = "";
       if(gamesSnap.empty) return selectElement.innerHTML = "<option>NO GAMES FOUND</option>";
 
-      gamesSnap.forEach(doc => { selectElement.innerHTML += `<option value="${doc.id}">${doc.data().name}</option>`; });
+      gamesSnap.forEach(document => { selectElement.innerHTML += `<option value="${document.id}">${document.data().name}</option>`; });
       loadSelectedGame();
   }
   loadGamesList();
@@ -127,10 +138,43 @@
       if(!gameId || gameId === "NO GAMES FOUND") return;
 
       if(unsubTeams) unsubTeams();
+      if(unsubGame) unsubGame();
 
+      // 1. Listen to Game Data for Global Timer
+      unsubGame = onSnapshot(doc(db, "tracer_games", gameId), (docSnap) => {
+          const gameData = docSnap.data();
+          const timerBox = document.getElementById("publicTimerBox");
+          const timerUI = document.getElementById("publicGlobalTimer");
+
+          if (!gameData) {
+              timerBox.style.display = "none";
+              return;
+          }
+
+          if (gameData.codingStartTimestamp && !gameData.isCodingLocked) {
+              timerBox.style.display = "block";
+              timerUI.style.color = "var(--neon-green)";
+              timerUI.style.textShadow = "0 0 15px rgba(0,255,136,0.5)";
+              clearInterval(publicTimerInterval);
+              publicTimerInterval = setInterval(() => {
+                  timerUI.innerText = formatTime(Date.now() - gameData.codingStartTimestamp);
+              }, 50);
+          } else if (gameData.isCodingLocked) {
+              timerBox.style.display = "block";
+              timerUI.innerText = "PHASE LOCKED";
+              timerUI.style.color = "#6e7681";
+              timerUI.style.textShadow = "none";
+              clearInterval(publicTimerInterval);
+          } else {
+              timerBox.style.display = "none";
+              clearInterval(publicTimerInterval);
+          }
+      });
+
+      // 2. Listen to Team Data for Leaderboard
       unsubTeams = onSnapshot(collection(db, "tracer_games", gameId, "teams"), (snapshot) => {
         let teams = [];
-        snapshot.forEach(doc => teams.push({ id: doc.id, ...doc.data() }));
+        snapshot.forEach(document => teams.push({ id: document.id, ...document.data() }));
         
         teams.sort((a, b) => {
             if(a.totalTimeMs === null && b.totalTimeMs === null) return a.name.localeCompare(b.name);
@@ -141,18 +185,28 @@
         
         const tbody = document.getElementById("leaderboard-body");
         tbody.innerHTML = ""; 
-        if (teams.length === 0) return tbody.innerHTML = "<tr><td colspan='6'>NO TEAMS REGISTERED.</td></tr>";
+        if (teams.length === 0) return tbody.innerHTML = "<tr><td colspan='5'>NO TEAMS REGISTERED.</td></tr>";
 
         teams.forEach((team, index) => {
           
+          // Times
           let codeStr = team.codingTimeMs !== null ? formatTime(team.codingTimeMs) : "--:--.--";
           let raceStr = team.raceTimeMs !== null ? formatTime(team.raceTimeMs) : "--:--.--";
           
-          let modHtml = "";
-          if(team.points > 0) modHtml += `<span class="mod-chip mod-green">-${team.points * 10}s</span> `;
-          if(team.penalties > 0) modHtml += `<span class="mod-chip mod-red">+${team.penalties * 10}s</span>`;
-          if(!modHtml) modHtml = `<span style="color:#6e7681">-</span>`;
+          // Dynamic Colors
+          let codeColor = team.codingTimeMs !== null ? "var(--gold-accent)" : "#8b949e";
+          let raceColor = team.raceTimeMs !== null ? "var(--gold-accent)" : "#8b949e";
 
+          // Modifiers injected directly under Race Time
+          let modHtml = "";
+          if(team.points > 0) modHtml += `<span class="mod-chip mod-green">-${team.points * 10}s</span>`;
+          if(team.penalties > 0) modHtml += `<span class="mod-chip mod-red">+${team.penalties * 10}s</span>`;
+          
+          let raceDisplay = modHtml 
+              ? `<span style="color:${raceColor}">${raceStr}</span><br><div style="margin-top:6px;">${modHtml}</div>` 
+              : `<span style="color:${raceColor}">${raceStr}</span>`;
+
+          // Total Box
           let totalHtml = team.totalTimeMs !== null 
               ? `<span class="total-time-box time-font">${formatTime(team.totalTimeMs)}</span>` 
               : `<span class="pending-box">IN PROGRESS</span>`;
@@ -161,9 +215,8 @@
             <tr class="${index === 0 && team.totalTimeMs !== null ? 'rank-1' : ''}">
               <td class="time-font" style="font-size: 1.2em;">${index + 1}</td>
               <td class="team-name">${team.name}</td>
-              <td class="time-font" style="color:#8b949e">${codeStr}</td>
-              <td class="time-font" style="color:#8b949e">${raceStr}</td>
-              <td>${modHtml}</td>
+              <td class="time-font" style="color:${codeColor}; font-size: 1.2em; text-shadow: ${team.codingTimeMs ? '0 0 8px rgba(230,168,0,0.4)' : 'none'};">${codeStr}</td>
+              <td class="time-font">${raceDisplay}</td>
               <td>${totalHtml}</td>
             </tr>`;
         });
