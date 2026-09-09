@@ -245,7 +245,8 @@
       unsubGame = onSnapshot(doc(db, "tracer_games", currentGameId), (docSnap) => {
           currentGameData = docSnap.data();
           renderCodingControls();
-          renderTeamsTab(); // Update UI in case coding started and locks roster
+          renderTeamsTab(); 
+          renderCodeTab(); // Forces the "Done" buttons to enable when timer starts
       });
 
       unsubTeams = onSnapshot(collection(db, "tracer_games", currentGameId, "teams"), (snapshot) => {
@@ -373,8 +374,8 @@
               actionBtn = `<button class="btn-manage" onclick="resetTeamCoding('${team.id}')">REDO</button>`;
           } else {
               let disabled = (currentGameData && currentGameData.codingStartTimestamp) ? "" : "disabled";
-              let btnClass = disabled ? "btn-gray" : "btn-blue";
-              actionBtn = `<button class="${btnClass}" ${disabled} onclick="stopTeamCoding('${team.id}')">⏹ STOP</button>`;
+              let btnClass = disabled ? "btn-gray" : "btn-green";
+              actionBtn = `<button class="${btnClass}" ${disabled} onclick="stopTeamCoding('${team.id}')">✅ DONE</button>`;
           }
 
           tbody.innerHTML += `<tr>
