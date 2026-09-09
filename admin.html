@@ -139,11 +139,15 @@
 
     <!-- TAB 3: Race Phase -->
     <div id="raceTab" class="tab-content">
-        <p style="color: #8b949e; text-align: center;">Green Button: Point (-10s). Red Button: Penalty (+10s).</p>
+        <div id="raceLockedUI" class="lock-msg">RACE PHASE LOCKED. DATA FINALIZED.</div>
+        <p id="raceInfoMsg" style="color: #8b949e; text-align: center;">Green Button: Point (-10s). Red Button: Penalty (+10s).</p>
+        
         <table>
             <thead><tr><th>TEAM</th><th>RACE TIME</th><th>TIMING CONTROLS</th><th>MODIFIERS</th></tr></thead>
             <tbody id="race-list-body"></tbody>
         </table>
+
+        <button id="finishRaceBtn" class="btn-red" onclick="lockRacePhase()" style="width: 100%; margin-top: 30px; font-size: 18px;">🏁 FINISH RACE PHASE (LOCK RESULTS)</button>
     </div>
 </div>
 
@@ -220,7 +224,7 @@
       if(!name) return;
       await addDoc(collection(db, "tracer_games"), { 
           name: name, createdAt: new Date(), 
-          codingStartTimestamp: null, isCodingLocked: false 
+          codingStartTimestamp: null, isCodingLocked: false, isRaceLocked: false 
       });
       document.getElementById("gameName").value = "";
   };
@@ -246,7 +250,8 @@
           currentGameData = docSnap.data();
           renderCodingControls();
           renderTeamsTab(); 
-          renderCodeTab(); // Forces the "Done" buttons to enable when timer starts
+          renderCodeTab(); 
+          renderRaceTab();
       });
 
       unsubTeams = onSnapshot(collection(db, "tracer_games", currentGameId, "teams"), (snapshot) => {
@@ -401,12 +406,29 @@
       const tbody = document.getElementById("race-list-body");
       tbody.innerHTML = "";
       
+      const isRaceLocked = currentGameData && currentGameData.isRaceLocked;
+
+      // Lock UI Banners & Finish Button
+      if (isRaceLocked) {
+          document.getElementById("raceLockedUI").style.display = "block";
+          document.getElementById("raceInfoMsg").style.display = "none";
+          document.getElementById("finishRaceBtn").style.display = "none";
+      } else {
+          document.getElementById("raceLockedUI").style.display = "none";
+          document.getElementById("raceInfoMsg").style.display = "block";
+          document.getElementById("finishRaceBtn").style.display = "block";
+      }
+
       currentTeamsList.forEach(team => {
           let timeDisplay = "00:00.00";
           let raceControls = "";
           let timerColor = "white";
           
-          if(team.raceTimeMs !== null) {
+          if(isRaceLocked) {
+              timeDisplay = team.raceTimeMs !== null ? formatTime(team.raceTimeMs) : "00:00.00";
+              timerColor = team.raceTimeMs !== null ? "var(--gold-accent)" : "#6e7681";
+              raceControls = `<span style="color:#6e7681; font-family: 'Orbitron', sans-serif;">LOCKED</span>`;
+          } else if(team.raceTimeMs !== null) {
               timeDisplay = formatTime(team.raceTimeMs);
               timerColor = "var(--gold-accent)";
               raceControls = `<button class="btn-manage" onclick="resetTeamRace('${team.id}')">REDO</button>`;
@@ -424,27 +446,32 @@
               raceControls = `<button class="btn-primary" style="padding: 5px 15px;" onclick="startTeamRace('${team.id}')">▶ START</button>`;
           }
 
+          // Modifier Buttons disabled state
+          const disMod = isRaceLocked ? "disabled style='opacity:0.5; cursor:not-allowed;'" : "";
+
           tbody.innerHTML += `<tr>
               <td class="team-name" style="width: 30%;">${team.name}</td>
               <td class="timer-display" id="raceTime_${team.id}" style="width: 120px; font-size: 1.2em; color: ${timerColor};">${timeDisplay}</td>
               <td>${raceControls}</td>
               <td class="mod-controls">
-                  <button class="btn-green mod-btn" onclick="addModifier('${team.id}', 'points')">
+                  <button class="btn-green mod-btn" ${disMod} onclick="addModifier('${team.id}', 'points')">
                       + POINT <span class="mod-count">${team.points || 0}</span>
                   </button>
-                  <button class="btn-red mod-btn" onclick="addModifier('${team.id}', 'penalties')">
+                  <button class="btn-red mod-btn" ${disMod} onclick="addModifier('${team.id}', 'penalties')">
                       + PENALTY <span class="mod-count">${team.penalties || 0}</span>
                   </button>
-                  <button class="btn-manage mod-btn" title="Reset Mods" onclick="resetModifiers('${team.id}')" style="margin-left: 5px;">↺</button>
+                  <button class="btn-manage mod-btn" ${disMod} title="Reset Mods" onclick="resetModifiers('${team.id}')" style="margin-left: 5px;">↺</button>
               </td>
           </tr>`;
       });
   }
 
   window.startTeamRace = async function(teamId) {
+      if(currentGameData && currentGameData.isRaceLocked) return alert("RACE PHASE IS LOCKED.");
       await updateDoc(doc(db, "tracer_games", currentGameId, "teams", teamId), { raceStartTimestamp: Date.now() });
   };
   window.stopTeamRace = async function(teamId) {
+      if(currentGameData && currentGameData.isRaceLocked) return alert("RACE PHASE IS LOCKED.");
       const team = currentTeamsList.find(t => t.id === teamId);
       if(!team || !team.raceStartTimestamp) return;
       const elapsed = Date.now() - team.raceStartTimestamp;
@@ -452,20 +479,29 @@
       recalculateTotal(teamId);
   };
   window.resetTeamRace = async function(teamId) {
+      if(currentGameData && currentGameData.isRaceLocked) return alert("RACE PHASE IS LOCKED.");
       if(!confirm("Reset race time for this team?")) return;
       await updateDoc(doc(db, "tracer_games", currentGameId, "teams", teamId), { raceTimeMs: null, raceStartTimestamp: null, totalTimeMs: null });
   };
 
   window.addModifier = async function(teamId, type) {
+      if(currentGameData && currentGameData.isRaceLocked) return alert("RACE PHASE IS LOCKED.");
       const team = currentTeamsList.find(t => t.id === teamId);
       const currentVal = team[type] || 0;
       await updateDoc(doc(db, "tracer_games", currentGameId, "teams", teamId), { [type]: currentVal + 1 });
       recalculateTotal(teamId);
   };
   window.resetModifiers = async function(teamId) {
+      if(currentGameData && currentGameData.isRaceLocked) return alert("RACE PHASE IS LOCKED.");
       await updateDoc(doc(db, "tracer_games", currentGameId, "teams", teamId), { points: 0, penalties: 0 });
       recalculateTotal(teamId);
-  }
+  };
+
+  window.lockRacePhase = async function() {
+      if(!confirm("🏁 TERMINATE RACE PHASE?\n\nThis will lock all race times, modifiers, and final leaderboard standings.")) return;
+      await updateDoc(doc(db, "tracer_games", currentGameId), { isRaceLocked: true });
+      alert("RACE PHASE TERMINATED. RESULTS LOCKED.");
+  };
 
   async function recalculateTotal(teamId) {
       const team = currentTeamsList.find(t => t.id === teamId);
