@@ -112,7 +112,8 @@
 
   async function loadGamesList() {
       const selectElement = document.getElementById("publicGameSelect");
-      const gamesSnap = await getDocs(collection(db, "games"));
+      // CHANGED FROM "games" TO "tracer_games"
+      const gamesSnap = await getDocs(collection(db, "tracer_games"));
       selectElement.innerHTML = "";
       if(gamesSnap.empty) return selectElement.innerHTML = "<option>NO GAMES FOUND</option>";
 
@@ -127,11 +128,11 @@
 
       if(unsubTeams) unsubTeams();
 
-      unsubTeams = onSnapshot(collection(db, "games", gameId, "teams"), (snapshot) => {
+      // CHANGED FROM "games" TO "tracer_games"
+      unsubTeams = onSnapshot(collection(db, "tracer_games", gameId, "teams"), (snapshot) => {
         let teams = [];
         snapshot.forEach(doc => teams.push({ id: doc.id, ...doc.data() }));
         
-        // Sort: Finished teams first (lowest total time), then Pending teams at the bottom
         teams.sort((a, b) => {
             if(a.totalTimeMs === null && b.totalTimeMs === null) return a.name.localeCompare(b.name);
             if(a.totalTimeMs === null) return 1;
