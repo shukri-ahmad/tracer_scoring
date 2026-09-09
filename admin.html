@@ -9,7 +9,8 @@
         :root {
             --red-gear: #e72429;
             --blue-gear: #1f4179;
-            --blitz-grad: linear-gradient(90deg, #1f4179 0%, #9e58cc 100%);
+            --tracer-grad: linear-gradient(90deg, #5c4300 0%, #e6a800 100%);
+            --gold-accent: #e6a800;
             --bg-dark: #090c10;
             --panel-bg: #111822;
             --border-glow: #1f4179;
@@ -22,27 +23,31 @@
         
         .header-panel { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #30363d; padding-bottom: 15px;}
         .header-panel img { max-width: 120px; }
-        .header-controls a { color: #9e58cc; text-decoration: none; font-weight: bold; font-family: 'Orbitron', sans-serif; font-size: 12px; margin-right: 15px;}
+        .header-controls a { color: var(--gold-accent); text-decoration: none; font-weight: bold; font-family: 'Orbitron', sans-serif; font-size: 12px; margin-right: 15px; transition: 0.3s;}
+        .header-controls a:hover { color: white; }
         
         h1, h2, h3 { font-family: 'Orbitron', sans-serif; color: white; text-transform: uppercase; letter-spacing: 1px;}
         
         .tab-menu { display: flex; border-bottom: 2px solid #30363d; margin-bottom: 25px; }
         .tab-btn { flex: 1; padding: 12px; cursor: pointer; background: rgba(0,0,0,0.3); border: 1px solid transparent; font-size: 15px; font-weight: bold; color: #8b949e; font-family: 'Orbitron', sans-serif; transition: 0.3s; }
         .tab-btn:hover { background: rgba(31, 65, 121, 0.3); color: white;}
-        .tab-btn.active { background: var(--panel-bg); color: white; border: 1px solid #30363d; border-bottom: 2px solid var(--panel-bg); margin-bottom: -2px; border-top: 2px solid #9e58cc;}
+        .tab-btn.active { background: var(--panel-bg); color: white; border: 1px solid #30363d; border-bottom: 2px solid var(--panel-bg); margin-bottom: -2px; border-top: 2px solid var(--gold-accent);}
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
         input[type="text"] { padding: 10px; width: 65%; border: 1px solid #30363d; border-radius: 4px; background: #0d1117; color: white; font-family: 'Rajdhani', sans-serif; font-size: 16px;}
+        input:focus { outline: none; border-color: var(--gold-accent); box-shadow: 0 0 8px rgba(230, 168, 0, 0.4); }
         
         button { padding: 10px 15px; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-family: 'Orbitron', sans-serif; letter-spacing: 1px; text-transform: uppercase; transition: 0.2s;}
-        button.btn-primary { background: var(--blitz-grad); box-shadow: 0 4px 15px rgba(158, 88, 204, 0.3); }
+        button.btn-primary { background: var(--tracer-grad); box-shadow: 0 4px 15px rgba(230, 168, 0, 0.3); }
         button.btn-primary:hover { filter: brightness(1.2); }
         button.btn-blue { background-color: var(--blue-gear); }
         button.btn-red { background-color: var(--red-gear); }
         button.btn-green { background-color: #27ae60; color: white; }
         button.btn-gray { background-color: #484f58; color: #c9d1d9; cursor: not-allowed; }
+        button.btn-manage { background-color: #f39c12; padding: 5px 10px; font-size: 12px; color: black; }
         .logout { background-color: transparent; border: 1px solid var(--red-gear); color: var(--red-gear); font-size: 12px; padding: 5px 10px;}
+        .logout:hover { background-color: var(--red-gear); color: white;}
         
         table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 16px;}
         td, th { padding: 12px; border: 1px solid #30363d; text-align: center; vertical-align: middle;}
@@ -65,8 +70,8 @@
 <div class="container">
     <div class="header-panel">
         <div>
-            <img src="[FINAL] LOGO MAKEROBOT2026 (9)-Photoroom.png" alt="Logo">
-            <div style="font-family: 'Orbitron', sans-serif; color: white; font-size: 14px; margin-top: 5px; letter-spacing: 2px;">TRACER ADMIN</div>
+            <img src="[FINAL] LOGO MAKEROBOT2026 (8)-Photoroom.png" alt="Logo">
+            <div style="font-family: 'Orbitron', sans-serif; color: var(--gold-accent); font-size: 14px; margin-top: 5px; letter-spacing: 2px;">TRACER ADMIN</div>
         </div>
         <div class="header-controls">
             <a href="index.html" target="_blank">[ LAUNCH PUBLIC VIEWER ]</a>
@@ -113,12 +118,12 @@
     <!-- TAB 2: Code Phase -->
     <div id="codeTab" class="tab-content">
         <div class="global-timer-box">
-            <h3>GLOBAL CODING TIMER</h3>
+            <h3 style="color: var(--gold-accent);">GLOBAL CODING TIMER</h3>
             <div id="globalTimerUI" class="global-timer-display">00:00.00</div>
             <div id="codeControls">
                 <button class="btn-primary" onclick="startGlobalCoding()" style="font-size: 18px; padding: 15px 30px;">▶ START CODING PHASE</button>
             </div>
-            <div id="codeLockedUI" style="display: none; color: var(--red-gear); font-weight: bold; margin-top: 15px;">CODING PHASE LOCKED. PROCEED TO RACE.</div>
+            <div id="codeLockedUI" style="display: none; color: var(--red-gear); font-weight: bold; margin-top: 15px; font-family: 'Orbitron', sans-serif;">CODING PHASE LOCKED. PROCEED TO RACE.</div>
         </div>
 
         <table>
@@ -142,7 +147,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-  import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCGERiYn2mKRHH4O3DSVunFeIQBYn4QjBM",
@@ -190,8 +195,6 @@
       return `${m}:${s}.${msStr}`;
   }
 
-  // --- GAME MANAGEMENT ---
-  // CHANGED FROM "games" TO "tracer_games"
   onSnapshot(collection(db, "tracer_games"), (snapshot) => {
       const tbody = document.getElementById("games-list-body");
       tbody.innerHTML = "";
@@ -200,7 +203,7 @@
           const game = docSnap.data();
           allGamesData[docSnap.id] = game;
           tbody.innerHTML += `<tr>
-              <td class="team-name">${game.name}</td>
+              <td class="team-name" style="font-family: 'Orbitron', sans-serif;">${game.name}</td>
               <td>
                   <button class="btn-primary" style="padding: 5px 10px; font-size:12px;" onclick="selectGame('${docSnap.id}')">SELECT</button>
                   <button class="btn-red" onclick="deleteGame('${docSnap.id}', '${game.name}')">DEL</button>
@@ -212,7 +215,6 @@
   window.createGame = async function() {
       const name = document.getElementById("gameName").value.trim();
       if(!name) return;
-      // CHANGED FROM "games" TO "tracer_games"
       await addDoc(collection(db, "tracer_games"), { 
           name: name, createdAt: new Date(), 
           codingStartTimestamp: null, isCodingLocked: false 
@@ -223,7 +225,6 @@
   window.deleteGame = async function(id, name) {
       if(confirm(`PURGE DIRECTORY: "${name}"?`)) {
           if(currentGameId === id) currentGameId = null;
-          // CHANGED FROM "games" TO "tracer_games"
           await deleteDoc(doc(db, "tracer_games", id));
       }
   };
@@ -238,13 +239,11 @@
       clearInterval(globalTimerInterval);
       for(let key in raceTimerIntervals) clearInterval(raceTimerIntervals[key]);
 
-      // CHANGED FROM "games" TO "tracer_games"
       unsubGame = onSnapshot(doc(db, "tracer_games", currentGameId), (docSnap) => {
           currentGameData = docSnap.data();
           renderCodingControls();
       });
 
-      // CHANGED FROM "games" TO "tracer_games"
       unsubTeams = onSnapshot(collection(db, "tracer_games", currentGameId, "teams"), (snapshot) => {
           currentTeamsList = [];
           snapshot.forEach(d => currentTeamsList.push({ id: d.id, ...d.data() }));
@@ -258,7 +257,6 @@
       switchTab('teamsTab', document.getElementById('tabBtn1'));
   };
 
-  // --- TEAMS TAB ---
   function renderTeamsTab() {
       document.getElementById("teamCount").innerText = currentTeamsList.length;
       const tbody = document.getElementById("teams-list-body");
@@ -272,7 +270,6 @@
   window.addTeam = async function() {
       const name = document.getElementById("teamName").value.trim();
       if(!name || !currentGameId) return;
-      // CHANGED FROM "games" TO "tracer_games"
       await addDoc(collection(db, "tracer_games", currentGameId, "teams"), { 
           name: name, codingTimeMs: null, raceStartTimestamp: null, 
           raceTimeMs: null, points: 0, penalties: 0, totalTimeMs: null 
@@ -280,11 +277,9 @@
       document.getElementById("teamName").value = ""; 
   };
   window.deleteTeam = async function(id) {
-      // CHANGED FROM "games" TO "tracer_games"
       if(confirm(`DELETE UNIT?`)) await deleteDoc(doc(db, "tracer_games", currentGameId, "teams", id));
   };
 
-  // --- CODE PHASE TAB ---
   function renderCodingControls() {
       const ui = document.getElementById("globalTimerUI");
       const controls = document.getElementById("codeControls");
@@ -295,6 +290,7 @@
           controls.style.display = "none";
           lockedMsg.style.display = "block";
           ui.style.color = "#6e7681";
+          ui.style.textShadow = "none";
           return;
       }
 
@@ -302,6 +298,7 @@
       if (currentGameData.codingStartTimestamp) {
           controls.innerHTML = `<button class="btn-red" onclick="resetGlobalCoding()" style="font-size: 14px;">RESET GLOBAL TIMER</button>`;
           ui.style.color = "var(--neon-green)";
+          ui.style.textShadow = "0 0 15px rgba(0,255,136,0.5)";
           
           clearInterval(globalTimerInterval);
           globalTimerInterval = setInterval(() => {
@@ -311,17 +308,16 @@
           clearInterval(globalTimerInterval);
           ui.innerText = "00:00.00";
           ui.style.color = "white";
+          ui.style.textShadow = "none";
           controls.innerHTML = `<button class="btn-primary" onclick="startGlobalCoding()" style="font-size: 18px; padding: 15px 30px;">▶ START CODING PHASE</button>`;
       }
   }
 
   window.startGlobalCoding = async function() {
-      // CHANGED FROM "games" TO "tracer_games"
       await updateDoc(doc(db, "tracer_games", currentGameId), { codingStartTimestamp: Date.now() });
   };
   window.resetGlobalCoding = async function() {
       if(!confirm("Reset timer? All team coding times will be wiped.")) return;
-      // CHANGED FROM "games" TO "tracer_games"
       await updateDoc(doc(db, "tracer_games", currentGameId), { codingStartTimestamp: null });
       currentTeamsList.forEach(t => {
           updateDoc(doc(db, "tracer_games", currentGameId, "teams", t.id), { codingTimeMs: null, totalTimeMs: null });
@@ -329,7 +325,6 @@
   };
   window.lockCodingPhase = async function() {
       if(!confirm("Lock coding phase? You cannot record more coding times.")) return;
-      // CHANGED FROM "games" TO "tracer_games"
       await updateDoc(doc(db, "tracer_games", currentGameId), { isCodingLocked: true });
       switchTab('raceTab', document.getElementById('tabBtn3'));
   };
@@ -342,7 +337,7 @@
           let actionBtn = "";
           
           if(currentGameData && currentGameData.isCodingLocked) {
-              actionBtn = `<span style="color:#6e7681">LOCKED</span>`;
+              actionBtn = `<span style="color:#6e7681; font-family: 'Orbitron', sans-serif;">LOCKED</span>`;
           } else if (team.codingTimeMs !== null) {
               actionBtn = `<button class="btn-manage" onclick="resetTeamCoding('${team.id}')">REDO</button>`;
           } else {
@@ -353,7 +348,7 @@
 
           tbody.innerHTML += `<tr>
               <td class="team-name">${team.name}</td>
-              <td class="timer-display" style="width: 120px;">${timeDisplay}</td>
+              <td class="timer-display" style="width: 120px; color: ${team.codingTimeMs !== null ? 'var(--gold-accent)' : 'white'};">${timeDisplay}</td>
               <td>${actionBtn}</td>
           </tr>`;
       });
@@ -362,12 +357,10 @@
   window.stopTeamCoding = async function(teamId) {
       if(!currentGameData.codingStartTimestamp) return;
       const elapsed = Date.now() - currentGameData.codingStartTimestamp;
-      // CHANGED FROM "games" TO "tracer_games"
       await updateDoc(doc(db, "tracer_games", currentGameId, "teams", teamId), { codingTimeMs: elapsed });
       recalculateTotal(teamId);
   };
   window.resetTeamCoding = async function(teamId) {
-      // CHANGED FROM "games" TO "tracer_games"
       await updateDoc(doc(db, "tracer_games", currentGameId, "teams", teamId), { codingTimeMs: null, totalTimeMs: null });
   };
 
@@ -379,12 +372,15 @@
       currentTeamsList.forEach(team => {
           let timeDisplay = "00:00.00";
           let raceControls = "";
+          let timerColor = "white";
           
           if(team.raceTimeMs !== null) {
               timeDisplay = formatTime(team.raceTimeMs);
+              timerColor = "var(--gold-accent)";
               raceControls = `<button class="btn-manage" onclick="resetTeamRace('${team.id}')">REDO</button>`;
               clearInterval(raceTimerIntervals[team.id]);
           } else if (team.raceStartTimestamp !== null) {
+              timerColor = "var(--neon-green)";
               raceControls = `<button class="btn-red" onclick="stopTeamRace('${team.id}')">⏹ STOP</button>`;
               if(!raceTimerIntervals[team.id]) {
                   raceTimerIntervals[team.id] = setInterval(() => {
@@ -398,7 +394,7 @@
 
           tbody.innerHTML += `<tr>
               <td class="team-name" style="width: 30%;">${team.name}</td>
-              <td class="timer-display" id="raceTime_${team.id}" style="width: 120px; font-size: 1.2em;">${timeDisplay}</td>
+              <td class="timer-display" id="raceTime_${team.id}" style="width: 120px; font-size: 1.2em; color: ${timerColor};">${timeDisplay}</td>
               <td>${raceControls}</td>
               <td class="mod-controls">
                   <button class="btn-green mod-btn" onclick="addModifier('${team.id}', 'points')">
@@ -414,32 +410,27 @@
   }
 
   window.startTeamRace = async function(teamId) {
-      // CHANGED FROM "games" TO "tracer_games"
       await updateDoc(doc(db, "tracer_games", currentGameId, "teams", teamId), { raceStartTimestamp: Date.now() });
   };
   window.stopTeamRace = async function(teamId) {
       const team = currentTeamsList.find(t => t.id === teamId);
       if(!team || !team.raceStartTimestamp) return;
       const elapsed = Date.now() - team.raceStartTimestamp;
-      // CHANGED FROM "games" TO "tracer_games"
       await updateDoc(doc(db, "tracer_games", currentGameId, "teams", teamId), { raceTimeMs: elapsed, raceStartTimestamp: null });
       recalculateTotal(teamId);
   };
   window.resetTeamRace = async function(teamId) {
       if(!confirm("Reset race time for this team?")) return;
-      // CHANGED FROM "games" TO "tracer_games"
       await updateDoc(doc(db, "tracer_games", currentGameId, "teams", teamId), { raceTimeMs: null, raceStartTimestamp: null, totalTimeMs: null });
   };
 
   window.addModifier = async function(teamId, type) {
       const team = currentTeamsList.find(t => t.id === teamId);
       const currentVal = team[type] || 0;
-      // CHANGED FROM "games" TO "tracer_games"
       await updateDoc(doc(db, "tracer_games", currentGameId, "teams", teamId), { [type]: currentVal + 1 });
       recalculateTotal(teamId);
   };
   window.resetModifiers = async function(teamId) {
-      // CHANGED FROM "games" TO "tracer_games"
       await updateDoc(doc(db, "tracer_games", currentGameId, "teams", teamId), { points: 0, penalties: 0 });
       recalculateTotal(teamId);
   }
@@ -457,7 +448,6 @@
       let total = cTime + rTime - ptsBonus + penPenalty;
       if (total < 0) total = 0; 
 
-      // CHANGED FROM "games" TO "tracer_games"
       await updateDoc(doc(db, "tracer_games", currentGameId, "teams", teamId), { totalTimeMs: total });
   }
 </script>
