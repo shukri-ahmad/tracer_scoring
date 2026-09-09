@@ -59,6 +59,7 @@
         .global-timer-display { font-size: 3em; font-family: 'Orbitron', sans-serif; color: var(--neon-green); text-shadow: 0 0 15px rgba(0,255,136,0.5); margin: 10px 0;}
         
         .active-game-label { background: rgba(31, 65, 121, 0.2); padding: 12px; border-radius: 4px; color: #79c0ff; font-weight: bold; margin-bottom: 20px; border: 1px solid var(--blue-gear); display: none; font-family: 'Orbitron', sans-serif;}
+        .lock-msg { display: none; background: rgba(231, 36, 41, 0.1); padding: 15px; border-left: 4px solid var(--red-gear); margin-bottom: 15px; font-weight: bold; color: #ff7b72; font-family: 'Orbitron', sans-serif;}
         
         .mod-controls { display: flex; gap: 5px; justify-content: center; align-items: center; }
         .mod-btn { padding: 5px 10px; font-size: 14px; display: flex; align-items: center; gap: 5px;}
@@ -103,6 +104,7 @@
 
     <!-- TAB 1: Teams -->
     <div id="teamsTab" class="tab-content">
+        <div id="teamLockMessage" class="lock-msg">SYSTEM LOCKED: CODING PHASE INITIATED. ROSTER IS LOCKED.</div>
         <div id="teamSetupControls">
             <h3>REGISTER TEAM UNIT</h3>
             <input type="text" id="teamName" placeholder="Enter Team Designation">
@@ -113,6 +115,7 @@
             <thead><tr><th>TEAM DESIGNATION</th><th>ACTION</th></tr></thead>
             <tbody id="teams-list-body"></tbody>
         </table>
+        <button id="doneTeamsBtn" class="btn-primary" onclick="lockTeamsAndProceed()" style="width: 100%; margin-top: 20px;">[ INITIATE EVENT (PROCEED TO CODE PHASE) ]</button>
     </div>
 
     <!-- TAB 2: Code Phase -->
@@ -147,7 +150,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-  import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCGERiYn2mKRHH4O3DSVunFeIQBYn4QjBM",
@@ -242,6 +245,7 @@
       unsubGame = onSnapshot(doc(db, "tracer_games", currentGameId), (docSnap) => {
           currentGameData = docSnap.data();
           renderCodingControls();
+          renderTeamsTab(); // Update UI in case coding started and locks roster
       });
 
       unsubTeams = onSnapshot(collection(db, "tracer_games", currentGameId, "teams"), (snapshot) => {
@@ -257,13 +261,36 @@
       switchTab('teamsTab', document.getElementById('tabBtn1'));
   };
 
+  // --- TEAMS TAB ---
+  window.lockTeamsAndProceed = function() {
+      if(currentTeamsList.length < 1) return alert("MINIMUM 1 UNIT REQUIRED FOR SIMULATION.");
+      switchTab('codeTab', document.getElementById('tabBtn2'));
+  };
+
   function renderTeamsTab() {
+      const hasStarted = currentGameData && (currentGameData.codingStartTimestamp || currentGameData.isCodingLocked);
+      
+      if (hasStarted) {
+          document.getElementById("teamSetupControls").style.display = "none";
+          document.getElementById("doneTeamsBtn").style.display = "none";
+          document.getElementById("teamLockMessage").style.display = "block";
+      } else {
+          document.getElementById("teamSetupControls").style.display = "block";
+          document.getElementById("doneTeamsBtn").style.display = "block";
+          document.getElementById("teamLockMessage").style.display = "none";
+      }
+
       document.getElementById("teamCount").innerText = currentTeamsList.length;
       const tbody = document.getElementById("teams-list-body");
       tbody.innerHTML = "";
+      
       currentTeamsList.forEach(team => {
+          const actionHtml = hasStarted 
+              ? `<span style="color: #6e7681; font-style: italic;">LOCKED</span>` 
+              : `<button class="btn-red" onclick="deleteTeam('${team.id}')">DEL</button>`;
+          
           tbody.innerHTML += `<tr><td class="team-name">${team.name}</td>
-          <td><button class="btn-red" onclick="deleteTeam('${team.id}')">DEL</button></td></tr>`;
+          <td>${actionHtml}</td></tr>`;
       });
   }
 
@@ -276,14 +303,18 @@
       });
       document.getElementById("teamName").value = ""; 
   };
+  
   window.deleteTeam = async function(id) {
       if(confirm(`DELETE UNIT?`)) await deleteDoc(doc(db, "tracer_games", currentGameId, "teams", id));
   };
 
+  // --- CODE PHASE TAB ---
   function renderCodingControls() {
       const ui = document.getElementById("globalTimerUI");
       const controls = document.getElementById("codeControls");
       const lockedMsg = document.getElementById("codeLockedUI");
+
+      if (!currentGameData) return;
 
       if (currentGameData.isCodingLocked) {
           clearInterval(globalTimerInterval);
