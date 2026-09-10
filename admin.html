@@ -135,7 +135,7 @@
             <tbody id="code-list-body"></tbody>
         </table>
         
-        <button class="btn-red" onclick="lockCodingPhase()" style="width: 100%; margin-top: 30px; font-size: 18px;">🔒 LOCK CODING PHASE</button>
+        <button id="finishCodingBtn" class="btn-red" onclick="lockCodingPhase()" style="width: 100%; margin-top: 30px; font-size: 18px;">🏁 FINISH CODING PHASE (LOCK RESULTS)</button>
     </div>
 
     <!-- TAB 3: Race Phase -->
@@ -297,6 +297,7 @@
           renderTeamsTab();
           renderCodeTab();
           renderRaceTab();
+          checkAutoStopCoding(); // Check if all teams finished coding
       });
 
       switchTab('teamsTab', document.getElementById('tabBtn1'));
@@ -354,6 +355,7 @@
       const ui = document.getElementById("globalTimerUI");
       const controls = document.getElementById("codeControls");
       const lockedMsg = document.getElementById("codeLockedUI");
+      const finishBtn = document.getElementById("finishCodingBtn");
 
       if (!currentGameData) return;
 
@@ -361,12 +363,15 @@
           clearInterval(globalTimerInterval);
           controls.style.display = "none";
           lockedMsg.style.display = "block";
+          if (finishBtn) finishBtn.style.display = "none";
           ui.style.color = "#6e7681";
           ui.style.textShadow = "none";
           return;
       }
 
       lockedMsg.style.display = "none";
+      if (finishBtn) finishBtn.style.display = "block";
+
       if (currentGameData.codingStartTimestamp) {
           controls.innerHTML = `<button class="btn-red" onclick="resetGlobalCoding()" style="font-size: 14px;">RESET GLOBAL TIMER</button>`;
           ui.style.color = "var(--neon-green)";
@@ -388,18 +393,42 @@
   window.startGlobalCoding = async function() {
       await updateDoc(doc(db, "tracer_games", currentGameId), { codingStartTimestamp: Date.now() });
   };
+  
   window.resetGlobalCoding = async function() {
       if(!confirm("Reset timer? All team coding times will be wiped.")) return;
-      await updateDoc(doc(db, "tracer_games", currentGameId), { codingStartTimestamp: null });
+      await updateDoc(doc(db, "tracer_games", currentGameId), { codingStartTimestamp: null, isCodingLocked: false });
       currentTeamsList.forEach(t => {
           updateDoc(doc(db, "tracer_games", currentGameId, "teams", t.id), { codingTimeMs: null, totalTimeMs: null });
       });
   };
+
+  // MANUAL FINISH CODING BUTTON
   window.lockCodingPhase = async function() {
-      if(!confirm("Lock coding phase? You cannot record more coding times.")) return;
+      const unfinishedTeams = currentTeamsList.filter(t => t.codingTimeMs === null);
+      
+      if (unfinishedTeams.length > 0) {
+          const names = unfinishedTeams.map(t => `• ${t.name}`).join('\n');
+          if(!confirm(`⚠️ WARNING: ${unfinishedTeams.length} team(s) have NOT completed coding:\n\n${names}\n\nAre you sure you want to finish coding phase and lock the times anyway?`)) return;
+      } else {
+          if(!confirm("🏁 FINISH CODING PHASE?\n\nThis will stop the global timer and lock all coding results.")) return;
+      }
+
       await updateDoc(doc(db, "tracer_games", currentGameId), { isCodingLocked: true });
       switchTab('raceTab', document.getElementById('tabBtn3'));
   };
+
+  // AUTO-STOP WHEN ALL TEAMS FINISH CODING
+  async function checkAutoStopCoding() {
+      if (!currentGameData || !currentGameData.codingStartTimestamp || currentGameData.isCodingLocked) return;
+      if (currentTeamsList.length === 0) return;
+
+      const allFinished = currentTeamsList.every(t => t.codingTimeMs !== null);
+      if (allFinished) {
+          await updateDoc(doc(db, "tracer_games", currentGameId), { isCodingLocked: true });
+          alert("⚡ ALL TEAMS HAVE COMPLETED CODING!\n\nCoding phase timer has automatically stopped and locked. Proceeding to Race Phase.");
+          switchTab('raceTab', document.getElementById('tabBtn3'));
+      }
+  }
 
   function renderCodeTab() {
       const tbody = document.getElementById("code-list-body");
@@ -432,6 +461,7 @@
       await updateDoc(doc(db, "tracer_games", currentGameId, "teams", teamId), { codingTimeMs: elapsed });
       recalculateTotal(teamId);
   };
+  
   window.resetTeamCoding = async function(teamId) {
       await updateDoc(doc(db, "tracer_games", currentGameId, "teams", teamId), { codingTimeMs: null, totalTimeMs: null });
   };
@@ -463,13 +493,11 @@
               timerColor = team.raceTimeMs !== null ? "var(--gold-accent)" : "#6e7681";
               raceControls = `<span style="color:#6e7681; font-family: 'Orbitron', sans-serif;">LOCKED</span>`;
           } else if(team.raceTimeMs !== null) {
-              // FINISHED: Show REDO Button
               timeDisplay = formatTime(team.raceTimeMs);
               timerColor = "var(--gold-accent)";
               raceControls = `<button class="btn-manage" onclick="resetTeamRace('${team.id}')">↺ REDO</button>`;
               clearInterval(raceTimerIntervals[team.id]);
           } else if (team.raceStartTimestamp !== null) {
-              // MID-RACE: Show STOP Button
               timerColor = "var(--neon-green)";
               raceControls = `<button class="btn-red" onclick="stopTeamRace('${team.id}')">⏹ STOP</button>`;
               if(!raceTimerIntervals[team.id]) {
@@ -479,7 +507,6 @@
                   }, 50);
               }
           } else {
-              // READY: Show START Button
               raceControls = `<button class="btn-primary" style="padding: 5px 15px;" onclick="startTeamRace('${team.id}')">▶ START</button>`;
           }
 
@@ -506,6 +533,7 @@
       if(currentGameData && currentGameData.isRaceLocked) return alert("RACE PHASE IS LOCKED.");
       await updateDoc(doc(db, "tracer_games", currentGameId, "teams", teamId), { raceStartTimestamp: Date.now() });
   };
+
   window.stopTeamRace = async function(teamId) {
       if(currentGameData && currentGameData.isRaceLocked) return alert("RACE PHASE IS LOCKED.");
       const team = currentTeamsList.find(t => t.id === teamId);
@@ -514,6 +542,7 @@
       await updateDoc(doc(db, "tracer_games", currentGameId, "teams", teamId), { raceTimeMs: elapsed, raceStartTimestamp: null });
       recalculateTotal(teamId);
   };
+
   window.resetTeamRace = async function(teamId) {
       if(currentGameData && currentGameData.isRaceLocked) return alert("RACE PHASE IS LOCKED.");
       if(!confirm("Reset race time for this team? They can run the race again.")) return;
@@ -527,15 +556,14 @@
       await updateDoc(doc(db, "tracer_games", currentGameId, "teams", teamId), { [type]: currentVal + 1 });
       recalculateTotal(teamId);
   };
+
   window.resetModifiers = async function(teamId) {
       if(currentGameData && currentGameData.isRaceLocked) return alert("RACE PHASE IS LOCKED.");
       await updateDoc(doc(db, "tracer_games", currentGameId, "teams", teamId), { points: 0, penalties: 0 });
       recalculateTotal(teamId);
   };
 
-  // CHECK UNFINISHED TEAMS BEFORE LOCKING
   window.lockRacePhase = async function() {
-      // Find teams that haven't finished their race run
       const unfinishedTeams = currentTeamsList.filter(t => t.raceTimeMs === null);
 
       if (unfinishedTeams.length > 0) {
