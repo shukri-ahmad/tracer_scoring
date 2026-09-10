@@ -244,18 +244,15 @@
       }
   };
 
-  // REBOOT (RESTART) GAME
   window.restartGame = async function(id, name) {
       if(!confirm(`⚠️ SYSTEM OVERRIDE: REBOOT "${name}"?\n\nAll coding times, race times, and modifiers will be zeroed out. Team units will remain in the roster.`)) return;
 
-      // 1. Reset Game Document Locks & Timers
       await updateDoc(doc(db, "tracer_games", id), {
           codingStartTimestamp: null,
           isCodingLocked: false,
           isRaceLocked: false
       });
 
-      // 2. Wipe times and modifiers for all registered teams
       const teamsSnap = await getDocs(collection(db, "tracer_games", id, "teams"));
       const resetPromises = [];
       teamsSnap.forEach(tDoc => {
@@ -466,11 +463,13 @@
               timerColor = team.raceTimeMs !== null ? "var(--gold-accent)" : "#6e7681";
               raceControls = `<span style="color:#6e7681; font-family: 'Orbitron', sans-serif;">LOCKED</span>`;
           } else if(team.raceTimeMs !== null) {
+              // FINISHED: Show REDO Button
               timeDisplay = formatTime(team.raceTimeMs);
               timerColor = "var(--gold-accent)";
-              raceControls = `<button class="btn-manage" onclick="resetTeamRace('${team.id}')">REDO</button>`;
+              raceControls = `<button class="btn-manage" onclick="resetTeamRace('${team.id}')">↺ REDO</button>`;
               clearInterval(raceTimerIntervals[team.id]);
           } else if (team.raceStartTimestamp !== null) {
+              // MID-RACE: Show STOP Button
               timerColor = "var(--neon-green)";
               raceControls = `<button class="btn-red" onclick="stopTeamRace('${team.id}')">⏹ STOP</button>`;
               if(!raceTimerIntervals[team.id]) {
@@ -480,6 +479,7 @@
                   }, 50);
               }
           } else {
+              // READY: Show START Button
               raceControls = `<button class="btn-primary" style="padding: 5px 15px;" onclick="startTeamRace('${team.id}')">▶ START</button>`;
           }
 
@@ -516,7 +516,7 @@
   };
   window.resetTeamRace = async function(teamId) {
       if(currentGameData && currentGameData.isRaceLocked) return alert("RACE PHASE IS LOCKED.");
-      if(!confirm("Reset race time for this team?")) return;
+      if(!confirm("Reset race time for this team? They can run the race again.")) return;
       await updateDoc(doc(db, "tracer_games", currentGameId, "teams", teamId), { raceTimeMs: null, raceStartTimestamp: null, totalTimeMs: null });
   };
 
@@ -533,8 +533,19 @@
       recalculateTotal(teamId);
   };
 
+  // CHECK UNFINISHED TEAMS BEFORE LOCKING
   window.lockRacePhase = async function() {
-      if(!confirm("🏁 TERMINATE RACE PHASE?\n\nThis will lock all race times, modifiers, and final leaderboard standings.")) return;
+      // Find teams that haven't finished their race run
+      const unfinishedTeams = currentTeamsList.filter(t => t.raceTimeMs === null);
+
+      if (unfinishedTeams.length > 0) {
+          const names = unfinishedTeams.map(t => `• ${t.name}`).join('\n');
+          const warningMsg = `⚠️ WARNING: ${unfinishedTeams.length} team(s) have NOT finished racing:\n\n${names}\n\nAre you sure you want to lock the race phase and finalize the results anyway?`;
+          if (!confirm(warningMsg)) return;
+      } else {
+          if (!confirm("🏁 TERMINATE RACE PHASE?\n\nThis will lock all race times, modifiers, and final leaderboard standings.")) return;
+      }
+
       await updateDoc(doc(db, "tracer_games", currentGameId), { isRaceLocked: true });
       alert("RACE PHASE TERMINATED. RESULTS LOCKED.");
   };
