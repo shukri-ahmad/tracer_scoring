@@ -112,6 +112,7 @@
   let unsubTeams = null;
   let unsubGame = null;
   let publicTimerInterval = null;
+  let currentGameData = null;
 
   function formatTime(ms) {
       if(ms === null || ms === undefined || ms < 0) return "--:--.--";
@@ -128,7 +129,7 @@
       selectElement.innerHTML = "";
       if(gamesSnap.empty) return selectElement.innerHTML = "<option>NO GAMES FOUND</option>";
 
-      gamesSnap.forEach(document => { selectElement.innerHTML += `<option value="${document.id}">${document.data().name}</option>`; });
+      gamesSnap.forEach(documentDoc => { selectElement.innerHTML += `<option value="${documentDoc.id}">${documentDoc.data().name}</option>`; });
       loadSelectedGame();
   }
   loadGamesList();
@@ -140,26 +141,26 @@
       if(unsubTeams) unsubTeams();
       if(unsubGame) unsubGame();
 
-      // 1. Listen to Game Data for Global Timer
+      // 1. Listen to Game Data for Global Timer State
       unsubGame = onSnapshot(doc(db, "tracer_games", gameId), (docSnap) => {
-          const gameData = docSnap.data();
+          currentGameData = docSnap.data();
           const timerBox = document.getElementById("publicTimerBox");
           const timerUI = document.getElementById("publicGlobalTimer");
 
-          if (!gameData) {
+          if (!currentGameData) {
               timerBox.style.display = "none";
               return;
           }
 
-          if (gameData.codingStartTimestamp && !gameData.isCodingLocked) {
+          if (currentGameData.codingStartTimestamp && !currentGameData.isCodingLocked) {
               timerBox.style.display = "block";
               timerUI.style.color = "var(--neon-green)";
               timerUI.style.textShadow = "0 0 15px rgba(0,255,136,0.5)";
               clearInterval(publicTimerInterval);
               publicTimerInterval = setInterval(() => {
-                  timerUI.innerText = formatTime(Date.now() - gameData.codingStartTimestamp);
+                  timerUI.innerText = formatTime(Date.now() - currentGameData.codingStartTimestamp);
               }, 50);
-          } else if (gameData.isCodingLocked) {
+          } else if (currentGameData.isCodingLocked) {
               timerBox.style.display = "block";
               timerUI.innerText = "PHASE LOCKED";
               timerUI.style.color = "#6e7681";
@@ -171,16 +172,29 @@
           }
       });
 
-      // 2. Listen to Team Data for Leaderboard
+      // 2. Listen to Team Data & Real-Time Auto Sorting
       unsubTeams = onSnapshot(collection(db, "tracer_games", gameId, "teams"), (snapshot) => {
         let teams = [];
-        snapshot.forEach(document => teams.push({ id: document.id, ...document.data() }));
+        snapshot.forEach(documentDoc => teams.push({ id: documentDoc.id, ...documentDoc.data() }));
         
+        // AUTO-SORT ALGORITHM ACCORDING TO PHASE
         teams.sort((a, b) => {
-            if(a.totalTimeMs === null && b.totalTimeMs === null) return a.name.localeCompare(b.name);
-            if(a.totalTimeMs === null) return 1;
-            if(b.totalTimeMs === null) return -1;
-            return a.totalTimeMs - b.totalTimeMs;
+            // Rule 1: Prioritize completed Total Times (Lowest Total Time wins)
+            if (a.totalTimeMs !== null && b.totalTimeMs !== null) {
+                return a.totalTimeMs - b.totalTimeMs;
+            }
+            if (a.totalTimeMs !== null) return -1;
+            if (b.totalTimeMs !== null) return 1;
+
+            // Rule 2: If during Coding Phase or Race Phase, sort completed Code Times first (Lowest Code Time)
+            if (a.codingTimeMs !== null && b.codingTimeMs !== null) {
+                return a.codingTimeMs - b.codingTimeMs;
+            }
+            if (a.codingTimeMs !== null) return -1;
+            if (b.codingTimeMs !== null) return 1;
+
+            // Rule 3: Unfinished teams stay sorted alphabetically
+            return a.name.localeCompare(b.name);
         });
         
         const tbody = document.getElementById("leaderboard-body");
@@ -189,15 +203,12 @@
 
         teams.forEach((team, index) => {
           
-          // Times
           let codeStr = team.codingTimeMs !== null ? formatTime(team.codingTimeMs) : "--:--.--";
           let raceStr = team.raceTimeMs !== null ? formatTime(team.raceTimeMs) : "--:--.--";
           
-          // Dynamic Colors
           let codeColor = team.codingTimeMs !== null ? "var(--gold-accent)" : "#8b949e";
           let raceColor = team.raceTimeMs !== null ? "var(--gold-accent)" : "#8b949e";
 
-          // Modifiers injected directly under Race Time
           let modHtml = "";
           if(team.points > 0) modHtml += `<span class="mod-chip mod-green">-${team.points * 10}s</span>`;
           if(team.penalties > 0) modHtml += `<span class="mod-chip mod-red">+${team.penalties * 10}s</span>`;
@@ -206,13 +217,12 @@
               ? `<span style="color:${raceColor}">${raceStr}</span><br><div style="margin-top:6px;">${modHtml}</div>` 
               : `<span style="color:${raceColor}">${raceStr}</span>`;
 
-          // Total Box
           let totalHtml = team.totalTimeMs !== null 
               ? `<span class="total-time-box time-font">${formatTime(team.totalTimeMs)}</span>` 
               : `<span class="pending-box">IN PROGRESS</span>`;
 
           tbody.innerHTML += `
-            <tr class="${index === 0 && team.totalTimeMs !== null ? 'rank-1' : ''}">
+            <tr class="${index === 0 && (team.totalTimeMs !== null || team.codingTimeMs !== null) ? 'rank-1' : ''}">
               <td class="time-font" style="font-size: 1.2em;">${index + 1}</td>
               <td class="team-name">${team.name}</td>
               <td class="time-font" style="color:${codeColor}; font-size: 1.2em; text-shadow: ${team.codingTimeMs ? '0 0 8px rgba(230,168,0,0.4)' : 'none'};">${codeStr}</td>
