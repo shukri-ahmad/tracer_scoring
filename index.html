@@ -32,9 +32,21 @@
         .game-selector { text-align: center; margin-bottom: 25px; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 8px; border: 1px solid #30363d; }
         .game-selector select { padding: 10px; font-size: 16px; border-radius: 4px; font-weight: bold; width: 50%; background: #0d1117; color: white; border: 1px solid var(--border-glow); font-family: 'Rajdhani', sans-serif; }
 
-        /* Global Monospaced Timer */
+        /* Rigid Monospaced Orbitron Display */
         .global-timer-box { text-align: center; background: #0d1117; padding: 20px; border: 2px solid var(--border-glow); border-radius: 8px; margin-bottom: 25px; display: none; }
-        .global-timer-display { font-size: 4em; font-family: 'Orbitron', monospace; font-variant-numeric: tabular-nums; color: var(--neon-green); text-shadow: 0 0 15px rgba(0,255,136,0.5); margin: 10px 0; display: inline-block; width: 100%; text-align: center; letter-spacing: 2px; }
+        .global-timer-display { 
+            font-size: 4em; 
+            font-family: 'Courier New', Consolas, 'Lucida Console', monospace; 
+            font-weight: 900;
+            color: var(--neon-green); 
+            text-shadow: 0 0 15px rgba(0,255,136,0.5); 
+            margin: 10px auto; 
+            display: block; 
+            width: 360px; 
+            text-align: center; 
+            letter-spacing: 2px; 
+            white-space: nowrap;
+        }
 
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 18px; }
         th, td { padding: 15px 12px; text-align: center; border-bottom: 1px solid #30363d; vertical-align: middle;}
@@ -44,7 +56,7 @@
         .rank-1 td { color: #fff; font-weight: bold; text-shadow: 0 0 5px var(--gold-accent); }
         
         .team-name { font-weight: bold; text-align: left; padding-left: 20px; font-size: 1.2em; color: white;}
-        .time-font { font-family: 'Orbitron', monospace; font-variant-numeric: tabular-nums; font-size: 1.1em;}
+        .time-font { font-family: 'Courier New', Consolas, 'Lucida Console', monospace; font-weight: 700; font-size: 1.1em;}
         
         .total-time-box { font-size: 1.4em; font-weight: bold; background: #0d1117; border: 1px solid var(--neon-green); border-radius: 4px; display: inline-block; padding: 8px 15px; color: var(--neon-green); text-shadow: 0 0 8px rgba(0,255,136,0.4);}
         .pending-box { font-size: 1em; color: #6e7681; font-style: italic; }
