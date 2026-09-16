@@ -55,7 +55,7 @@
         th { background: #0d1117; color: #8b949e; font-family: 'Orbitron', sans-serif; font-size: 14px;}
         .team-name { font-weight: bold; text-align: left; padding-left: 15px; color: white; font-size: 1.2em;}
         
-        /* Rigid Monospaced Digit Slot Containers */
+        /* Digit Slot Containers */
         .timer-display { 
             font-family: 'Orbitron', monospace; 
             font-size: 1.2em; 
@@ -191,7 +191,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-  import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, onSnapshot, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCGERiYn2mKRHH4O3DSVunFeIQBYn4QjBM",
@@ -206,7 +206,7 @@
   const auth = getAuth(app);
   const db = getFirestore(app);
 
-  // Replace this string with your Firebase Authentication User UID for Super Admin privileges
+  // Update this UID to grant Super Admin privileges
   const SUPER_ADMIN_UID = "v9YW7VnYbKNqmL8UXiPIQcutkl13";
 
   let currentGameId = null;
@@ -269,10 +269,8 @@
 
       let qGames;
       if (user.uid === SUPER_ADMIN_UID) {
-          // Super Admin override: fetch ALL games
           qGames = query(collection(db, "tracer_games"));
       } else {
-          // Standard Admin: Fetch ONLY games created by this specific user
           qGames = query(collection(db, "tracer_games"), where("createdBy", "==", user.uid));
       }
 
@@ -280,6 +278,12 @@
           const tbody = document.getElementById("games-list-body");
           tbody.innerHTML = "";
           allGamesData = {};
+          
+          if (snapshot.empty) {
+              tbody.innerHTML = `<tr><td colspan="2" style="color: #6e7681; text-align: center;">NO ACTIVE DIRECTORIES FOUND</td></tr>`;
+              return;
+          }
+
           snapshot.forEach(docSnap => {
               const game = docSnap.data();
               allGamesData[docSnap.id] = game;
@@ -306,7 +310,7 @@
       await addDoc(collection(db, "tracer_games"), { 
           name: name, 
           createdAt: new Date(), 
-          createdBy: auth.currentUser.uid, // Locks game ownership to creator
+          createdBy: auth.currentUser.uid, 
           codingStartTimestamp: null, 
           codingAccumulatedMs: 0, 
           isCodingPaused: false, 
@@ -420,9 +424,16 @@
   window.addTeam = async function() {
       const name = document.getElementById("teamName").value.trim();
       if(!name || !currentGameId) return;
+      
       await addDoc(collection(db, "tracer_games", currentGameId, "teams"), { 
-          name: name, codingTimeMs: null, raceStartTimestamp: null, 
-          raceTimeMs: null, points: 0, penalties: 0, totalTimeMs: null 
+          name: name, 
+          createdBy: auth.currentUser.uid, // Explicitly store owner UID for team reads/writes
+          codingTimeMs: null, 
+          raceStartTimestamp: null, 
+          raceTimeMs: null, 
+          points: 0, 
+          penalties: 0, 
+          totalTimeMs: null 
       });
       document.getElementById("teamName").value = ""; 
   };
@@ -571,7 +582,7 @@
       const tbody = document.getElementById("code-list-body");
       tbody.innerHTML = "";
       
-      // Strict Check: DONE button is ONLY enabled when timer is actively ticking
+      // Strict Rule: The DONE button is enabled ONLY when the timer is actively ticking
       const isTimerRunning = currentGameData && currentGameData.codingStartTimestamp && !currentGameData.isCodingPaused;
 
       currentTeamsList.forEach(team => {
