@@ -55,7 +55,7 @@
         th { background: #0d1117; color: #8b949e; font-family: 'Orbitron', sans-serif; font-size: 14px;}
         .team-name { font-weight: bold; text-align: left; padding-left: 15px; color: white; font-size: 1.2em;}
         
-        /* Digit Grid Containers to prevent ANY movement */
+        /* Fixed Monospaced Orbitron Display */
         .timer-display { 
             font-family: 'Orbitron', monospace; 
             font-size: 1.2em; 
@@ -232,7 +232,6 @@
     btnElement.classList.add('active');
   };
 
-  // Generates Orbitron HTML with each character in an isolated fixed-width slot
   function formatTime(ms) {
       if(ms === null || ms === undefined || ms < 0) return "--:--.--";
       let date = new Date(ms);
@@ -547,7 +546,8 @@
       const tbody = document.getElementById("code-list-body");
       tbody.innerHTML = "";
       
-      const isTimerActive = currentGameData && (currentGameData.codingStartTimestamp || currentGameData.isCodingPaused);
+      // The DONE button is strictly enabled ONLY when the timer is actively running
+      const isTimerRunning = currentGameData && currentGameData.codingStartTimestamp && !currentGameData.isCodingPaused;
 
       currentTeamsList.forEach(team => {
           let timeDisplay = team.codingTimeMs !== null ? formatTime(team.codingTimeMs) : "PENDING";
@@ -558,8 +558,8 @@
           } else if (team.codingTimeMs !== null) {
               actionBtn = `<button class="btn-manage" onclick="resetTeamCoding('${team.id}')">REDO</button>`;
           } else {
-              let disabled = isTimerActive ? "" : "disabled";
-              let btnClass = disabled ? "btn-gray" : "btn-green";
+              let disabled = isTimerRunning ? "" : "disabled";
+              let btnClass = isTimerRunning ? "btn-green" : "btn-gray";
               actionBtn = `<button class="${btnClass}" ${disabled} onclick="stopTeamCoding('${team.id}')">✅ DONE</button>`;
           }
 
@@ -572,7 +572,7 @@
   }
 
   window.stopTeamCoding = async function(teamId) {
-      if (!currentGameData) return;
+      if (!currentGameData || !currentGameData.codingStartTimestamp || currentGameData.isCodingPaused) return;
       const elapsed = getGlobalElapsedCodingTime();
       await updateDoc(doc(db, "tracer_games", currentGameId, "teams", teamId), { codingTimeMs: elapsed });
       recalculateTotal(teamId);
