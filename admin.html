@@ -55,45 +55,46 @@
         th { background: #0d1117; color: #8b949e; font-family: 'Orbitron', sans-serif; font-size: 14px;}
         .team-name { font-weight: bold; text-align: left; padding-left: 15px; color: white; font-size: 1.2em;}
         
-        /* Orbitron Monospaced/Fixed-Container Styling */
+        /* Digit Grid Containers to prevent ANY movement */
         .timer-display { 
-            font-family: 'Orbitron', sans-serif; 
-            font-variant-numeric: tabular-nums;
-            -moz-font-feature-settings: "tnum";
-            -webkit-font-feature-settings: "tnum";
-            font-feature-settings: "tnum";
-            font-size: 1.3em; 
+            font-family: 'Orbitron', monospace; 
+            font-size: 1.2em; 
             font-weight: 700; 
             background: #0d1117; 
-            padding: 6px 0; 
+            padding: 6px 10px; 
             border-radius: 4px; 
             border: 1px solid #30363d; 
-            display: inline-block; 
-            width: 150px; 
-            text-align: center;
-            letter-spacing: 1px;
+            display: inline-flex; 
+            justify-content: center;
+            align-items: center;
             white-space: nowrap;
-            overflow: hidden;
+        }
+
+        .digit-slot {
+            display: inline-block;
+            width: 0.75em;
+            text-align: center;
         }
 
         .global-timer-box { text-align: center; background: #0d1117; padding: 20px; border: 2px solid var(--border-glow); border-radius: 8px; margin-bottom: 20px; }
         
         .global-timer-display { 
             font-size: 3.5em; 
-            font-family: 'Orbitron', sans-serif; 
-            font-variant-numeric: tabular-nums;
-            -moz-font-feature-settings: "tnum";
-            -webkit-font-feature-settings: "tnum";
-            font-feature-settings: "tnum";
+            font-family: 'Orbitron', monospace; 
             font-weight: 900;
             color: var(--neon-green); 
             text-shadow: 0 0 15px rgba(0,255,136,0.5); 
             margin: 10px auto; 
-            display: block; 
-            width: 360px; 
+            display: inline-flex; 
+            justify-content: center;
+            align-items: center;
             text-align: center; 
             letter-spacing: 2px; 
             white-space: nowrap;
+        }
+
+        .global-timer-display .digit-slot {
+            width: 0.75em;
         }
         
         .active-game-label { background: rgba(31, 65, 121, 0.2); padding: 12px; border-radius: 4px; color: #79c0ff; font-weight: bold; margin-bottom: 20px; border: 1px solid var(--blue-gear); display: none; font-family: 'Orbitron', sans-serif;}
@@ -160,7 +161,7 @@
     <div id="codeTab" class="tab-content">
         <div class="global-timer-box">
             <h3 style="color: var(--gold-accent);">GLOBAL CODING TIMER</h3>
-            <div id="globalTimerUI" class="global-timer-display">00:00.00</div>
+            <div id="globalTimerUI" class="global-timer-display"></div>
             <div id="codeControls" style="display: flex; justify-content: center; gap: 10px;">
                 <!-- Controls injected dynamically -->
             </div>
@@ -231,13 +232,20 @@
     btnElement.classList.add('active');
   };
 
+  // Generates Orbitron HTML with each character in an isolated fixed-width slot
   function formatTime(ms) {
-      if(ms === null || ms === undefined || ms < 0) return "00:00.00";
+      if(ms === null || ms === undefined || ms < 0) return "--:--.--";
       let date = new Date(ms);
       let m = String(date.getUTCMinutes()).padStart(2, '0');
       let s = String(date.getUTCSeconds()).padStart(2, '0');
       let msStr = String(Math.floor(date.getUTCMilliseconds() / 10)).padStart(2, '0');
-      return `${m}:${s}.${msStr}`;
+      
+      let raw = `${m}:${s}.${msStr}`;
+      let html = '';
+      for(let char of raw) {
+          html += `<span class="digit-slot">${char}</span>`;
+      }
+      return html;
   }
 
   function getGlobalElapsedCodingTime() {
@@ -415,7 +423,7 @@
           if (finishBtn) finishBtn.style.display = "none";
           ui.style.color = "#6e7681";
           ui.style.textShadow = "none";
-          ui.innerText = formatTime(getGlobalElapsedCodingTime());
+          ui.innerHTML = formatTime(getGlobalElapsedCodingTime());
           return;
       }
 
@@ -435,11 +443,11 @@
           
           clearInterval(globalTimerInterval);
           globalTimerInterval = setInterval(() => {
-              ui.innerText = formatTime(getGlobalElapsedCodingTime());
+              ui.innerHTML = formatTime(getGlobalElapsedCodingTime());
           }, 50);
       } else if (isPaused) {
           clearInterval(globalTimerInterval);
-          ui.innerText = formatTime(getGlobalElapsedCodingTime());
+          ui.innerHTML = formatTime(getGlobalElapsedCodingTime());
           ui.style.color = "var(--gold-accent)";
           ui.style.textShadow = "0 0 10px rgba(230,168,0,0.5)";
           controls.innerHTML = `
@@ -448,7 +456,7 @@
           `;
       } else {
           clearInterval(globalTimerInterval);
-          ui.innerText = "00:00.00";
+          ui.innerHTML = formatTime(0);
           ui.style.color = "white";
           ui.style.textShadow = "none";
           controls.innerHTML = `<button class="btn-primary" onclick="startGlobalCoding()" style="font-size: 18px; padding: 15px 30px;">▶ START CODING PHASE</button>`;
@@ -592,12 +600,12 @@
       }
 
       currentTeamsList.forEach(team => {
-          let timeDisplay = "00:00.00";
+          let timeDisplay = formatTime(0);
           let raceControls = "";
           let timerColor = "white";
           
           if(isRaceLocked) {
-              timeDisplay = team.raceTimeMs !== null ? formatTime(team.raceTimeMs) : "00:00.00";
+              timeDisplay = team.raceTimeMs !== null ? formatTime(team.raceTimeMs) : formatTime(0);
               timerColor = team.raceTimeMs !== null ? "var(--gold-accent)" : "#6e7681";
               raceControls = `<span style="color:#6e7681; font-family: 'Orbitron', sans-serif;">LOCKED</span>`;
           } else if(team.raceTimeMs !== null) {
@@ -611,7 +619,7 @@
               if(!raceTimerIntervals[team.id]) {
                   raceTimerIntervals[team.id] = setInterval(() => {
                       const el = document.getElementById(`raceTime_${team.id}`);
-                      if(el) el.innerText = formatTime(Date.now() - team.raceStartTimestamp);
+                      if(el) el.innerHTML = formatTime(Date.now() - team.raceStartTimestamp);
                   }, 50);
               }
           } else {
@@ -622,7 +630,7 @@
 
           tbody.innerHTML += `<tr>
               <td class="team-name" style="width: 30%;">${team.name}</td>
-              <td class="timer-display" id="raceTime_${team.id}" style="font-size: 1.2em; color: ${timerColor};">${timeDisplay}</td>
+              <td class="timer-display" id="raceTime_${team.id}" style="color: ${timerColor};">${timeDisplay}</td>
               <td>${raceControls}</td>
               <td class="mod-controls">
                   <button class="btn-green mod-btn" ${disMod} onclick="addModifier('${team.id}', 'points')">
