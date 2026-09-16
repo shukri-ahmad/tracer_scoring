@@ -55,10 +55,46 @@
         th { background: #0d1117; color: #8b949e; font-family: 'Orbitron', sans-serif; font-size: 14px;}
         .team-name { font-weight: bold; text-align: left; padding-left: 15px; color: white; font-size: 1.2em;}
         
-        /* Fixed Monospaced Numeric Display */
-        .timer-display { font-family: 'Orbitron', monospace; font-variant-numeric: tabular-nums; font-size: 1.5em; font-weight: bold; background: #0d1117; padding: 5px 10px; border-radius: 4px; border: 1px solid #30363d; display: inline-block; width: 130px; text-align: center; }
+        /* Orbitron Monospaced/Fixed-Container Styling */
+        .timer-display { 
+            font-family: 'Orbitron', sans-serif; 
+            font-variant-numeric: tabular-nums;
+            -moz-font-feature-settings: "tnum";
+            -webkit-font-feature-settings: "tnum";
+            font-feature-settings: "tnum";
+            font-size: 1.3em; 
+            font-weight: 700; 
+            background: #0d1117; 
+            padding: 6px 0; 
+            border-radius: 4px; 
+            border: 1px solid #30363d; 
+            display: inline-block; 
+            width: 150px; 
+            text-align: center;
+            letter-spacing: 1px;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
         .global-timer-box { text-align: center; background: #0d1117; padding: 20px; border: 2px solid var(--border-glow); border-radius: 8px; margin-bottom: 20px; }
-        .global-timer-display { font-size: 3.5em; font-family: 'Orbitron', monospace; font-variant-numeric: tabular-nums; color: var(--neon-green); text-shadow: 0 0 15px rgba(0,255,136,0.5); margin: 10px 0; display: inline-block; width: 100%; text-align: center; letter-spacing: 2px; }
+        
+        .global-timer-display { 
+            font-size: 3.5em; 
+            font-family: 'Orbitron', sans-serif; 
+            font-variant-numeric: tabular-nums;
+            -moz-font-feature-settings: "tnum";
+            -webkit-font-feature-settings: "tnum";
+            font-feature-settings: "tnum";
+            font-weight: 900;
+            color: var(--neon-green); 
+            text-shadow: 0 0 15px rgba(0,255,136,0.5); 
+            margin: 10px auto; 
+            display: block; 
+            width: 360px; 
+            text-align: center; 
+            letter-spacing: 2px; 
+            white-space: nowrap;
+        }
         
         .active-game-label { background: rgba(31, 65, 121, 0.2); padding: 12px; border-radius: 4px; color: #79c0ff; font-weight: bold; margin-bottom: 20px; border: 1px solid var(--blue-gear); display: none; font-family: 'Orbitron', sans-serif;}
         .lock-msg { display: none; background: rgba(231, 36, 41, 0.1); padding: 15px; border-left: 4px solid var(--red-gear); margin-bottom: 15px; font-weight: bold; color: #ff7b72; font-family: 'Orbitron', sans-serif;}
@@ -204,7 +240,6 @@
       return `${m}:${s}.${msStr}`;
   }
 
-  // Calculate live global elapsed coding time taking pause states into account
   function getGlobalElapsedCodingTime() {
       if (!currentGameData) return 0;
       let accum = currentGameData.codingAccumulatedMs || 0;
@@ -470,7 +505,6 @@
           if(!confirm("🏁 FINISH CODING PHASE?\n\nThis will stop the global timer and lock all coding results.")) return;
       }
 
-      // Freeze current time if running
       let finalAccum = getGlobalElapsedCodingTime();
 
       await updateDoc(doc(db, "tracer_games", currentGameId), { 
@@ -523,7 +557,7 @@
 
           tbody.innerHTML += `<tr>
               <td class="team-name">${team.name}</td>
-              <td class="timer-display" style="width: 130px; color: ${team.codingTimeMs !== null ? 'var(--gold-accent)' : 'white'};">${timeDisplay}</td>
+              <td class="timer-display" style="color: ${team.codingTimeMs !== null ? 'var(--gold-accent)' : 'white'};">${timeDisplay}</td>
               <td>${actionBtn}</td>
           </tr>`;
       });
@@ -588,7 +622,7 @@
 
           tbody.innerHTML += `<tr>
               <td class="team-name" style="width: 30%;">${team.name}</td>
-              <td class="timer-display" id="raceTime_${team.id}" style="width: 130px; font-size: 1.2em; color: ${timerColor};">${timeDisplay}</td>
+              <td class="timer-display" id="raceTime_${team.id}" style="font-size: 1.2em; color: ${timerColor};">${timeDisplay}</td>
               <td>${raceControls}</td>
               <td class="mod-controls">
                   <button class="btn-green mod-btn" ${disMod} onclick="addModifier('${team.id}', 'points')">
