@@ -40,19 +40,17 @@
         .rank-1 td { color: #fff; font-weight: bold; text-shadow: 0 0 5px var(--gold-accent); }
         
         .team-name { font-weight: bold; text-align: left; padding-left: 15px; font-size: 1.1em; color: white;}
+        
+        /* Stripped all flexbox layouts. Guaranteed perfectly flat text. */
         .time-font { 
             font-family: 'Orbitron', monospace; 
             font-weight: 700; 
-            font-size: 1.05em;
-            display: inline-flex;
-            justify-content: center;
-            align-items: center;
+            font-size: 1.1em;
+            white-space: nowrap; 
         }
-
-        .digit-slot { display: inline-block; width: 0.75em; text-align: center; }
         
-        .total-time-box { font-size: 1.2em; font-weight: bold; background: #0d1117; border: 1px solid var(--neon-green); border-radius: 4px; display: inline-flex; padding: 6px 12px; color: var(--neon-green); text-shadow: 0 0 8px rgba(0,255,136,0.4);}
-        .pending-box { font-size: 0.9em; color: #6e7681; font-style: italic; }
+        .total-time-box { font-size: 1.2em; font-weight: bold; background: #0d1117; border: 1px solid var(--neon-green); border-radius: 4px; display: inline-block; padding: 6px 12px; color: var(--neon-green); text-shadow: 0 0 8px rgba(0,255,136,0.4); white-space: nowrap;}
+        .pending-box { font-size: 0.9em; color: #6e7681; font-style: italic; white-space: nowrap;}
         
         .mod-chip { display: inline-block; font-size: 11px; padding: 2px 6px; border-radius: 4px; font-family: 'Orbitron', sans-serif; font-weight: bold; margin: 0 2px;}
         .mod-green { background: rgba(39, 174, 96, 0.2); color: #2ecc71; border: 1px solid #27ae60;}
@@ -113,24 +111,14 @@
 
   let unsubTeams = null;
 
-  // Solid format function that guarantees exactly 8 characters of spans
+  // Stripped down formatter: Returns pure text, no spans, perfectly stable.
   function formatTime(ms) {
-      let raw = "";
-      if(ms === null || ms === undefined || ms < 0) {
-          raw = "--:--.--";
-      } else {
-          let date = new Date(ms);
-          let m = String(date.getUTCMinutes()).padStart(2, '0');
-          let s = String(date.getUTCSeconds()).padStart(2, '0');
-          let msStr = String(Math.floor(date.getUTCMilliseconds() / 10)).padStart(2, '0');
-          raw = `${m}:${s}.${msStr}`;
-      }
-      
-      let html = '';
-      for(let char of raw) {
-          html += `<span class="digit-slot">${char}</span>`;
-      }
-      return html;
+      if(ms === null || ms === undefined || ms < 0) return "--:--.--";
+      let date = new Date(ms);
+      let m = String(date.getUTCMinutes()).padStart(2, '0');
+      let s = String(date.getUTCSeconds()).padStart(2, '0');
+      let msStr = String(Math.floor(date.getUTCMilliseconds() / 10)).padStart(2, '0');
+      return `${m}:${s}.${msStr}`;
   }
 
   async function loadGamesList() {
@@ -163,7 +151,6 @@
             teams.push({ id: docSnap.id, ...data });
         });
         
-        // Sort Leaderboard: Valid Totals First (Fastest to Slowest) -> Then Alphabetical
         teams.sort((a, b) => {
             if (a.totalTimeMs !== null && b.totalTimeMs !== null) return a.totalTimeMs - b.totalTimeMs;
             if (a.totalTimeMs !== null) return -1;
@@ -196,10 +183,9 @@
           let raceColor = team.raceTimeMs !== null ? 'var(--gold-accent)' : '#8b949e';
           let rankClass = (index === 0 && team.totalTimeMs !== null) ? 'rank-1' : '';
 
-          // Stricter layout mapping to prevent columns from collapsing
           htmlBuffer += `
             <tr class="${rankClass}">
-              <td class="time-font" style="font-size: 1.1em; color: white;">${index + 1}</td>
+              <td class="time-font" style="color: white;">${index + 1}</td>
               <td class="team-name">${team.name}</td>
               <td class="time-font" style="color: ${codeColor}">${codeStr}</td>
               <td class="time-font" style="color: ${raceColor}">${raceStr}</td>
