@@ -147,25 +147,12 @@
 
       unsubTeams = onSnapshot(collection(db, "tracer_games", gameId, "teams"), (snapshot) => {
         let teams = [];
-        snapshot.forEach(docSnap => {
-            let data = docSnap.data();
-            
-            // Dynamic fallback calculation if stored totalTimeMs isn't generated yet
-            let computedTotal = data.totalTimeMs;
-            if (computedTotal === null && data.codingTimeMs !== null && data.raceTimeMs !== null) {
-                let ptsBonus = (data.points || 0) * 10000;
-                let penPenalty = (data.penalties || 0) * 10000;
-                computedTotal = data.codingTimeMs + data.raceTimeMs - ptsBonus + penPenalty;
-                if (computedTotal < 0) computedTotal = 0;
-            }
-
-            teams.push({ id: docSnap.id, ...data, effectiveTotal: computedTotal });
-        });
+        snapshot.forEach(docSnap => teams.push({ id: docSnap.id, ...docSnap.data() }));
         
         teams.sort((a, b) => {
-            if (a.effectiveTotal !== null && b.effectiveTotal !== null) return a.effectiveTotal - b.effectiveTotal;
-            if (a.effectiveTotal !== null) return -1;
-            if (b.effectiveTotal !== null) return 1;
+            if (a.totalTimeMs !== null && b.totalTimeMs !== null) return a.totalTimeMs - b.totalTimeMs;
+            if (a.totalTimeMs !== null) return -1;
+            if (b.totalTimeMs !== null) return 1;
             return a.name.localeCompare(b.name);
         });
         
@@ -182,12 +169,12 @@
           if(team.penalties > 0) modHtml += `<span class="mod-chip mod-red">+${team.penalties * 10}s</span>`;
           if(!modHtml) modHtml = `<span style="color:#6e7681">-</span>`;
 
-          let totalHtml = team.effectiveTotal !== null 
-              ? `<span class="total-time-box time-font">${formatTime(team.effectiveTotal)}</span>` 
+          let totalHtml = team.totalTimeMs !== null 
+              ? `<span class="total-time-box time-font">${formatTime(team.totalTimeMs)}</span>` 
               : `<span class="pending-box">IN PROGRESS</span>`;
 
           tbody.innerHTML += `
-            <tr class="${index === 0 && team.effectiveTotal !== null ? 'rank-1' : ''}">
+            <tr class="${index === 0 && team.totalTimeMs !== null ? 'rank-1' : ''}">
               <td class="time-font" style="font-size: 1.1em;">${index + 1}</td>
               <td class="team-name">${team.name}</td>
               <td class="time-font" style="color: ${team.codingTimeMs !== null ? 'var(--gold-accent)' : '#8b949e'}">${codeStr}</td>
