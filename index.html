@@ -41,7 +41,6 @@
         
         .team-name { font-weight: bold; text-align: left; padding-left: 15px; font-size: 1.1em; color: white;}
         
-        /* Stripped all flexbox layouts. Guaranteed perfectly flat text. */
         .time-font { 
             font-family: 'Orbitron', monospace; 
             font-weight: 700; 
@@ -52,7 +51,7 @@
         .total-time-box { font-size: 1.2em; font-weight: bold; background: #0d1117; border: 1px solid var(--neon-green); border-radius: 4px; display: inline-block; padding: 6px 12px; color: var(--neon-green); text-shadow: 0 0 8px rgba(0,255,136,0.4); white-space: nowrap;}
         .pending-box { font-size: 0.9em; color: #6e7681; font-style: italic; white-space: nowrap;}
         
-        .mod-chip { display: inline-block; font-size: 11px; padding: 2px 6px; border-radius: 4px; font-family: 'Orbitron', sans-serif; font-weight: bold; margin: 0 2px;}
+        .mod-chip { display: inline-block; font-size: 11px; padding: 2px 6px; border-radius: 4px; font-family: 'Orbitron', sans-serif; font-weight: bold; margin: 0;}
         .mod-green { background: rgba(39, 174, 96, 0.2); color: #2ecc71; border: 1px solid #27ae60;}
         .mod-red { background: rgba(231, 76, 60, 0.2); color: #e74c3c; border: 1px solid #c0392b;}
 
@@ -111,7 +110,6 @@
 
   let unsubTeams = null;
 
-  // Stripped down formatter: Returns pure text, no spans, perfectly stable.
   function formatTime(ms) {
       if(ms === null || ms === undefined || ms < 0) return "--:--.--";
       let date = new Date(ms);
@@ -189,7 +187,7 @@
               <td class="team-name">${team.name}</td>
               <td class="time-font" style="color: ${codeColor}">${codeStr}</td>
               <td class="time-font" style="color: ${raceColor}">${raceStr}</td>
-              <td>${modHtml}</td>
+              <td><div style="display: flex; justify-content: center; align-items: center; gap: 4px;">${modHtml}</div></td>
               <td>${totalHtml}</td>
             </tr>`;
         });
