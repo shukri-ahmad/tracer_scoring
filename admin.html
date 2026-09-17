@@ -55,7 +55,6 @@
         th { background: #0d1117; color: #8b949e; font-family: 'Orbitron', sans-serif; font-size: 14px;}
         .team-name { font-weight: bold; text-align: left; padding-left: 15px; color: white; font-size: 1.2em;}
         
-        /* Digit Slot Containers */
         .timer-display { 
             font-family: 'Orbitron', monospace; 
             font-size: 1.2em; 
@@ -206,7 +205,6 @@
   const auth = getAuth(app);
   const db = getFirestore(app);
 
-  // Update this UID to grant Super Admin privileges
   const SUPER_ADMIN_UID = "v9YW7VnYbKNqmL8UXiPIQcutkl13";
 
   let currentGameId = null;
@@ -263,7 +261,6 @@
       return accum;
   }
 
-  // --- GAME MANAGEMENT (WITH ADMIN ISOLATION) ---
   function initGamesListListener(user) {
       if(unsubGamesList) unsubGamesList();
 
@@ -388,7 +385,6 @@
       switchTab('teamsTab', document.getElementById('tabBtn1'));
   };
 
-  // --- TEAMS TAB ---
   window.lockTeamsAndProceed = function() {
       if(currentTeamsList.length < 1) return alert("MINIMUM 1 UNIT REQUIRED FOR SIMULATION.");
       switchTab('codeTab', document.getElementById('tabBtn2'));
@@ -427,7 +423,7 @@
       
       await addDoc(collection(db, "tracer_games", currentGameId, "teams"), { 
           name: name, 
-          createdBy: auth.currentUser.uid, // Explicitly store owner UID for team reads/writes
+          createdBy: auth.currentUser.uid, 
           codingTimeMs: null, 
           raceStartTimestamp: null, 
           raceTimeMs: null, 
@@ -442,7 +438,6 @@
       if(confirm(`DELETE UNIT?`)) await deleteDoc(doc(db, "tracer_games", currentGameId, "teams", id));
   };
 
-  // --- CODE PHASE TAB ---
   function renderCodingControls() {
       const ui = document.getElementById("globalTimerUI");
       const controls = document.getElementById("codeControls");
@@ -582,7 +577,6 @@
       const tbody = document.getElementById("code-list-body");
       tbody.innerHTML = "";
       
-      // Strict Rule: The DONE button is enabled ONLY when the timer is actively ticking
       const isTimerRunning = currentGameData && currentGameData.codingStartTimestamp && !currentGameData.isCodingPaused;
 
       currentTeamsList.forEach(team => {
@@ -618,7 +612,6 @@
       await updateDoc(doc(db, "tracer_games", currentGameId, "teams", teamId), { codingTimeMs: null, totalTimeMs: null });
   };
 
-  // --- RACE PHASE TAB ---
   function renderRaceTab() {
       const tbody = document.getElementById("race-list-body");
       tbody.innerHTML = "";
