@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MAKEROBOT TRACER - Live Standings</title>
+    <title>Admin Dashboard - Makerobot Tracer</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -16,144 +16,223 @@
             --border-glow: #1f4179;
             --text-main: #c9d1d9;
             --neon-green: #00ff88;
+            --purple-accent: #9d4edd;
         }
 
-        body { font-family: 'Rajdhani', sans-serif; background-color: var(--bg-dark); color: var(--text-main); margin: 0; padding: 20px; background-image: radial-gradient(circle at 50% 0%, rgba(230, 168, 0, 0.15) 0%, transparent 50%); }
-        .container { max-width: 1050px; margin: 0 auto; background: var(--panel-bg); padding: 20px 30px; border-radius: 12px; box-shadow: 0 0 20px rgba(0,0,0,0.8); border: 1px solid var(--border-glow); margin-bottom: 30px; }
+        body { font-family: 'Rajdhani', sans-serif; background-color: var(--bg-dark); color: var(--text-main); padding: 20px; display: none; background-image: radial-gradient(circle at 50% 0%, rgba(31, 65, 121, 0.2) 0%, transparent 50%);}
+        .container { max-width: 900px; margin: 0 auto; background: var(--panel-bg); padding: 20px 30px; border-radius: 12px; box-shadow: 0 0 20px rgba(0,0,0,0.8); border: 1px solid var(--border-glow); }
         
-        h1, h2, h3 { font-family: 'Orbitron', sans-serif; text-align: center; color: white; letter-spacing: 1px; text-transform: uppercase; margin-top: 0;}
-        .logo-container { text-align: center; margin-bottom: 10px; }
-        .logo-container img { max-width: 220px; filter: drop-shadow(0 0 10px rgba(230,168,0,0.3)); }
+        .header-panel { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #30363d; padding-bottom: 15px;}
+        .header-panel img { max-width: 120px; }
+        .header-controls { text-align: right; }
+        .header-controls a { color: var(--gold-accent); text-decoration: none; font-weight: bold; font-family: 'Orbitron', sans-serif; font-size: 12px; margin-right: 15px; transition: 0.3s;}
+        .header-controls a:hover { color: white; }
         
-        .header-links { text-align: right; margin-bottom: 10px; }
-        .header-links a { color: var(--gold-accent); text-decoration: none; font-weight: bold; font-family: 'Orbitron', sans-serif; font-size: 14px; text-transform: uppercase; transition: color 0.3s;}
-        .header-links a:hover { color: var(--neon-green); text-shadow: 0 0 8px var(--neon-green); }
-        
-        .game-selector { text-align: center; margin-bottom: 20px; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 8px; border: 1px solid #30363d; }
-        .game-selector select { padding: 10px; font-size: 16px; border-radius: 4px; font-weight: bold; width: 50%; background: #0d1117; color: white; border: 1px solid var(--border-glow); font-family: 'Rajdhani', sans-serif; }
-
-        /* Public Live Global Timer Widget */
-        .public-timer-box {
-            display: none;
-            text-align: center;
-            background: #0d1117;
-            padding: 15px 20px;
-            border: 2px solid var(--border-glow);
-            border-radius: 8px;
-            margin-bottom: 20px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.5);
-            transition: border-color 0.3s ease, background 0.3s ease;
-        }
-
-        .public-timer-title {
-            font-family: 'Orbitron', sans-serif;
+        /* User Profile Status Badge */
+        .user-status-bar {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-bottom: 8px;
             font-size: 13px;
-            color: var(--gold-accent);
-            letter-spacing: 2px;
-            text-transform: uppercase;
         }
-
-        .public-timer-display {
-            font-size: 3em;
-            font-family: 'Orbitron', monospace;
+        .user-email { color: #8b949e; font-family: 'Rajdhani', sans-serif; font-weight: 600; }
+        .role-badge {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 10px;
             font-weight: 900;
-            color: var(--neon-green);
-            text-shadow: 0 0 15px rgba(0,255,136,0.5);
-            margin: 5px 0 0 0;
+            padding: 3px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .role-super { background: rgba(157, 78, 221, 0.2); color: var(--purple-accent); border: 1px solid var(--purple-accent); }
+        .role-admin { background: rgba(31, 65, 121, 0.3); color: #79c0ff; border: 1px solid var(--blue-gear); }
+
+        h1, h2, h3 { font-family: 'Orbitron', sans-serif; color: white; text-transform: uppercase; letter-spacing: 1px;}
+        
+        .tab-menu { display: flex; border-bottom: 2px solid #30363d; margin-bottom: 25px; }
+        .tab-btn { flex: 1; padding: 12px; cursor: pointer; background: rgba(0,0,0,0.3); border: 1px solid transparent; font-size: 15px; font-weight: bold; color: #8b949e; font-family: 'Orbitron', sans-serif; transition: 0.3s; }
+        .tab-btn:hover { background: rgba(31, 65, 121, 0.3); color: white;}
+        .tab-btn.active { background: var(--panel-bg); color: white; border: 1px solid #30363d; border-bottom: 2px solid var(--panel-bg); margin-bottom: -2px; border-top: 2px solid var(--gold-accent);}
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        input[type="text"] { padding: 10px; width: 65%; border: 1px solid #30363d; border-radius: 4px; background: #0d1117; color: white; font-family: 'Rajdhani', sans-serif; font-size: 16px;}
+        input:focus { outline: none; border-color: var(--gold-accent); box-shadow: 0 0 8px rgba(230, 168, 0, 0.4); }
+        
+        button { padding: 10px 15px; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-family: 'Orbitron', sans-serif; letter-spacing: 1px; text-transform: uppercase; transition: 0.2s;}
+        button.btn-primary { background: var(--tracer-grad); box-shadow: 0 4px 15px rgba(230, 168, 0, 0.3); }
+        button.btn-primary:hover { filter: brightness(1.2); }
+        button.btn-blue { background-color: var(--blue-gear); }
+        button.btn-red { background-color: var(--red-gear); }
+        button.btn-green { background-color: #27ae60; color: white; }
+        button.btn-gray { background-color: #484f58; color: #c9d1d9; cursor: not-allowed; }
+        button.btn-manage { background-color: #f39c12; padding: 5px 10px; font-size: 12px; color: black; }
+        button.btn-restart { background-color: #9e58cc; padding: 5px 10px; font-size: 12px; }
+        button.btn-pdf { background: linear-gradient(90deg, #7b2cbf 0%, #9d4edd 100%); color: white; box-shadow: 0 0 10px rgba(157, 78, 221, 0.4); }
+        button.btn-pdf:hover { filter: brightness(1.2); }
+
+        .logout { background-color: transparent; border: 1px solid var(--red-gear); color: var(--red-gear); font-size: 12px; padding: 5px 10px;}
+        .logout:hover { background-color: var(--red-gear); color: white;}
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 16px;}
+        td, th { padding: 12px; border: 1px solid #30363d; text-align: center; vertical-align: middle;}
+        th { background: #0d1117; color: #8b949e; font-family: 'Orbitron', sans-serif; font-size: 14px;}
+        .team-name { font-weight: bold; text-align: left; padding-left: 15px; color: white; font-size: 1.2em;}
+        
+        .timer-display { 
+            font-family: 'Orbitron', monospace; 
+            font-size: 1.2em; 
+            font-weight: 700; 
+            background: #0d1117; 
+            padding: 6px 10px; 
+            border-radius: 4px; 
+            border: 1px solid #30363d; 
+            display: inline-flex; 
+            justify-content: center;
+            align-items: center;
             white-space: nowrap;
         }
 
-        /* FIX: High contrast black text on neon green banner */
-        .public-timer-toast {
-            font-size: 1.8em;
-            font-family: 'Orbitron', sans-serif;
-            font-weight: 900;
-            color: #0d1117 !important; /* Force dark text color */
-            background: var(--neon-green);
-            padding: 10px 15px;
-            border-radius: 6px;
-            box-shadow: 0 0 20px var(--neon-green);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-top: 8px;
-            display: inline-block;
-            animation: pulseGlow 1s infinite alternate;
-        }
+        .digit-slot { display: inline-block; width: 0.75em; text-align: center; }
 
-        @keyframes pulseGlow {
-            from { box-shadow: 0 0 10px var(--neon-green); }
-            to { box-shadow: 0 0 25px var(--neon-green); }
-        }
-
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 17px; }
-        th, td { padding: 14px 10px; text-align: center; border-bottom: 1px solid #30363d; vertical-align: middle;}
-        th { background: var(--tracer-grad); color: white; font-family: 'Orbitron', sans-serif; font-size: 13px; letter-spacing: 1px; }
+        .global-timer-box { text-align: center; background: #0d1117; padding: 20px; border: 2px solid var(--border-glow); border-radius: 8px; margin-bottom: 20px; }
         
-        .rank-1 { background: rgba(230, 168, 0, 0.15) !important; }
-        .rank-1 td { color: #fff; font-weight: bold; text-shadow: 0 0 5px var(--gold-accent); }
-        
-        .team-name { font-weight: bold; text-align: left; padding-left: 15px; font-size: 1.1em; color: white;}
-        
-        .time-font { 
+        .global-timer-display { 
+            font-size: 3.5em; 
             font-family: 'Orbitron', monospace; 
-            font-weight: 700; 
-            font-size: 1.1em;
-            white-space: nowrap; 
+            font-weight: 900;
+            color: var(--neon-green); 
+            text-shadow: 0 0 15px rgba(0,255,136,0.5); 
+            margin: 10px auto; 
+            display: inline-flex; 
+            justify-content: center;
+            align-items: center;
+            text-align: center; 
+            letter-spacing: 2px; 
+            white-space: nowrap;
         }
-        
-        .total-time-box { font-size: 1.2em; font-weight: bold; background: #0d1117; border: 1px solid var(--neon-green); border-radius: 4px; display: inline-block; padding: 6px 12px; color: var(--neon-green); text-shadow: 0 0 8px rgba(0,255,136,0.4); white-space: nowrap;}
-        .pending-box { font-size: 0.9em; color: #6e7681; font-style: italic; white-space: nowrap;}
-        
-        .mod-chip { display: inline-block; font-size: 11px; padding: 2px 6px; border-radius: 4px; font-family: 'Orbitron', sans-serif; font-weight: bold; margin: 0;}
-        .mod-green { background: rgba(39, 174, 96, 0.2); color: #2ecc71; border: 1px solid #27ae60;}
-        .mod-red { background: rgba(231, 76, 60, 0.2); color: #e74c3c; border: 1px solid #c0392b;}
 
-        .formula-text { text-align: center; font-size: 13px; color: #8b949e; margin-top: -5px; margin-bottom: 20px; font-weight: bold;}
+        .global-timer-display .digit-slot { width: 0.75em; }
+        
+        .active-game-bar {
+            background: rgba(31, 65, 121, 0.2); 
+            padding: 12px 20px; 
+            border-radius: 4px; 
+            color: #79c0ff; 
+            font-weight: bold; 
+            margin-bottom: 20px; 
+            border: 1px solid var(--blue-gear); 
+            display: none; 
+            font-family: 'Orbitron', sans-serif;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .lock-msg { display: none; background: rgba(231, 36, 41, 0.1); padding: 15px; border-left: 4px solid var(--red-gear); margin-bottom: 15px; font-weight: bold; color: #ff7b72; font-family: 'Orbitron', sans-serif;}
+        
+        .mod-controls { display: flex; gap: 5px; justify-content: center; align-items: center; }
+        .mod-btn { padding: 5px 10px; font-size: 14px; display: flex; align-items: center; gap: 5px;}
+        .mod-count { background: rgba(0,0,0,0.5); padding: 2px 6px; border-radius: 10px; font-size: 12px; }
     </style>
 </head>
-<body>
+<body id="adminBody">
 
 <div class="container">
-    <div class="header-links"><a href="admin.html">[ ADMIN TERMINAL ]</a></div>
-    
-    <div class="logo-container">
-        <img src="[FINAL] LOGO MAKEROBOT2026 (8)-Photoroom.png" alt="Makerobot Tracer Logo">
-        <h2 style="margin-top: 5px; font-size: 26px; color: var(--gold-accent);">TRACER LIVE STANDINGS</h2>
+    <div class="header-panel">
+        <div>
+            <img src="[FINAL] LOGO MAKEROBOT2026 (8)-Photoroom.png" alt="Logo">
+            <div style="font-family: 'Orbitron', sans-serif; color: var(--gold-accent); font-size: 14px; margin-top: 5px; letter-spacing: 2px;">TRACER ADMIN</div>
+        </div>
+        <div class="header-controls">
+            <!-- User Status & Role Indication -->
+            <div class="user-status-bar">
+                <span class="user-email" id="currentUserEmail">LOAD_USER...</span>
+                <span class="role-badge" id="currentUserRole">VERIFYING...</span>
+            </div>
+            <a href="index.html" target="_blank">[ LAUNCH PUBLIC VIEWER ]</a>
+            <button class="logout" onclick="logout()">LOGOUT</button>
+        </div>
     </div>
     
-    <div class="game-selector">
-        <label for="publicGameSelect" style="font-weight: bold; display: block; margin-bottom: 8px; color: #8b949e; font-family: 'Orbitron', sans-serif;">SELECT CATEGORY</label>
-        <select id="publicGameSelect" onchange="loadSelectedGame()"><option>INITIALIZING...</option></select>
+    <div class="tab-menu">
+        <button id="tabBtn0" class="tab-btn active" onclick="switchTab('gamesTab', this)">1. GAMES</button>
+        <button id="tabBtn1" class="tab-btn" onclick="switchTab('teamsTab', this)">2. TEAMS</button>
+        <button id="tabBtn2" class="tab-btn" onclick="switchTab('codeTab', this)">3. CODE PHASE</button>
+        <button id="tabBtn3" class="tab-btn" onclick="switchTab('raceTab', this)">4. RACE PHASE</button>
     </div>
 
-    <!-- Live Global Coding Timer for Public View -->
-    <div id="publicTimerBox" class="public-timer-box">
-        <div id="publicTimerTitle" class="public-timer-title">GLOBAL CODING PHASE</div>
-        <div id="publicTimerDisplay" class="public-timer-display">00:00.00</div>
+    <!-- Active Game Header with Super-Admin PDF Download Button -->
+    <div id="activeGameDisplay" class="active-game-bar">
+        <span id="targetGameLabel">TARGET GAME: NULL</span>
+        <button id="superAdminPdfBtn" class="btn-pdf" style="display: none; font-size: 11px; padding: 6px 12px;" onclick="generateResultsPDF()">📥 DOWNLOAD PDF REPORT</button>
     </div>
 
-    <p class="formula-text">TOTAL TIME = CODING TIME + RACE TIME - (POINTS x 10s) + (PENALTIES x 10s)</p>
-    
-    <table>
-        <thead>
-            <tr>
-                <th style="width: 8%;">RANK</th>
-                <th style="width: 25%; text-align: left; padding-left: 15px;">TEAM UNIT</th>
-                <th style="width: 15%;">CODING TIME</th>
-                <th style="width: 15%;">RACE TIME</th>
-                <th style="width: 17%;">MODIFIERS</th>
-                <th style="width: 20%;">FINAL TOTAL TIME</th>
-            </tr>
-        </thead>
-        <tbody id="leaderboard-body">
-            <tr><td colspan="6" style="color: #8b949e;">AWAITING DATA...</td></tr>
-        </tbody>
-    </table>
+    <!-- TAB 0: Games -->
+    <div id="gamesTab" class="tab-content active">
+        <h3>INITIALIZE TRACER GAME</h3>
+        <input type="text" id="gameName" placeholder="e.g., TRACER JUNIOR 2026">
+        <button class="btn-primary" onclick="createGame()">CREATE</button>
+
+        <h3 style="margin-top: 40px;">ACTIVE SYSTEMS</h3>
+        <table>
+            <thead><tr><th>GAME DIRECTORY</th><th>EXECUTE COMMAND</th></tr></thead>
+            <tbody id="games-list-body"></tbody>
+        </table>
+    </div>
+
+    <!-- TAB 1: Teams -->
+    <div id="teamsTab" class="tab-content">
+        <div id="teamLockMessage" class="lock-msg">SYSTEM LOCKED: EVENT INITIATED. ROSTER IS LOCKED.</div>
+        <div id="teamSetupControls">
+            <h3>REGISTER TEAM UNIT</h3>
+            <input type="text" id="teamName" placeholder="Enter Team Designation">
+            <button class="btn-primary" onclick="addTeam()">REGISTER</button>
+        </div>
+        <h3 style="margin-top: 40px;">UNIT ROSTER (<span id="teamCount">0</span>)</h3>
+        <table>
+            <thead><tr><th>TEAM DESIGNATION</th><th>ACTION</th></tr></thead>
+            <tbody id="teams-list-body"></tbody>
+        </table>
+        <button id="doneTeamsBtn" class="btn-primary" onclick="lockTeamsAndProceed()" style="width: 100%; margin-top: 20px;">[ INITIATE EVENT (PROCEED TO CODE PHASE) ]</button>
+    </div>
+
+    <!-- TAB 2: Code Phase -->
+    <div id="codeTab" class="tab-content">
+        <div class="global-timer-box">
+            <h3 style="color: var(--gold-accent);">GLOBAL CODING TIMER</h3>
+            <div id="globalTimerUI" class="global-timer-display"></div>
+            <div id="codeControls" style="display: flex; justify-content: center; gap: 10px;"></div>
+            <div id="codeLockedUI" style="display: none; color: var(--red-gear); font-weight: bold; margin-top: 15px; font-family: 'Orbitron', sans-serif;">CODING PHASE LOCKED. PROCEED TO RACE.</div>
+        </div>
+
+        <table>
+            <thead><tr><th>TEAM</th><th>CODING TIME</th><th>ACTION</th></tr></thead>
+            <tbody id="code-list-body"></tbody>
+        </table>
+        
+        <button id="finishCodingBtn" class="btn-red" onclick="lockCodingPhase()" style="width: 100%; margin-top: 30px; font-size: 18px;">🏁 FINISH CODING PHASE (LOCK RESULTS)</button>
+    </div>
+
+    <!-- TAB 3: Race Phase -->
+    <div id="raceTab" class="tab-content">
+        <div id="raceLockedUI" class="lock-msg">RACE PHASE LOCKED. DATA FINALIZED.</div>
+        <p id="raceInfoMsg" style="color: #8b949e; text-align: center;">Green Button: Point (-10s). Red Button: Penalty (+10s).</p>
+        
+        <table>
+            <thead><tr><th>TEAM</th><th>RACE TIME</th><th>TIMING CONTROLS</th><th>MODIFIERS</th></tr></thead>
+            <tbody id="race-list-body"></tbody>
+        </table>
+
+        <button id="finishRaceBtn" class="btn-red" onclick="lockRacePhase()" style="width: 100%; margin-top: 30px; font-size: 18px;">🏁 FINISH RACE PHASE (LOCK RESULTS)</button>
+    </div>
 </div>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getFirestore, collection, doc, onSnapshot, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCGERiYn2mKRHH4O3DSVunFeIQBYn4QjBM",
@@ -165,16 +244,76 @@
   };
 
   const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
   const db = getFirestore(app);
 
-  let unsubGameDoc = null;
-  let unsubTeams = null;
-  let publicTimerInterval = null;
+  const SUPER_ADMIN_UID = "v9YW7VnYbKNqmL8UXiPIQcutkl13";
+
+  let currentGameId = null;
   let currentGameData = null;
-  let previousTeamsMap = {};
-  let toastTimeout = null;
+  let currentTeamsList = [];
+  let allGamesData = {}; 
+  let isUserSuperAdmin = false;
+  
+  let unsubGamesList = null;
+  let unsubGame = null;
+  let unsubTeams = null;
+  let globalTimerInterval = null;
+  let raceTimerIntervals = {};
+
+  onAuthStateChanged(auth, user => {
+    if (user) {
+        document.getElementById("adminBody").style.display = "block";
+        
+        // Render Header Identity
+        document.getElementById("currentUserEmail").innerText = user.email || "AUTHORIZED ADMIN";
+        
+        isUserSuperAdmin = (user.uid === SUPER_ADMIN_UID);
+        const roleBadge = document.getElementById("currentUserRole");
+        const pdfBtn = document.getElementById("superAdminPdfBtn");
+        
+        if (isUserSuperAdmin) {
+            roleBadge.innerText = "SUPER ADMIN";
+            roleBadge.className = "role-badge role-super";
+            pdfBtn.style.display = "inline-block";
+        } else {
+            roleBadge.innerText = "ORGANIZER";
+            roleBadge.className = "role-badge role-admin";
+            pdfBtn.style.display = "none";
+        }
+
+        initGamesListListener(user);
+    } else {
+        window.location.href = "login.html";
+    }
+  });
+
+  window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
+
+  window.switchTab = function(tabId, btnElement) {
+    if (tabId !== 'gamesTab' && !currentGameId) return alert("PLEASE SELECT A TARGET GAME FIRST.");
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    btnElement.classList.add('active');
+  };
 
   function formatTime(ms) {
+      if(ms === null || ms === undefined || ms < 0) return "--:--.--";
+      let date = new Date(ms);
+      let m = String(date.getUTCMinutes()).padStart(2, '0');
+      let s = String(date.getUTCSeconds()).padStart(2, '0');
+      let msStr = String(Math.floor(date.getUTCMilliseconds() / 10)).padStart(2, '0');
+      
+      let raw = `${m}:${s}.${msStr}`;
+      let html = '';
+      for(let char of raw) {
+          html += `<span class="digit-slot">${char}</span>`;
+      }
+      return html;
+  }
+
+  function formatTimePlain(ms) {
       if(ms === null || ms === undefined || ms < 0) return "--:--.--";
       let date = new Date(ms);
       let m = String(date.getUTCMinutes()).padStart(2, '0');
@@ -192,191 +331,613 @@
       return accum;
   }
 
-  async function loadGamesList() {
-      const selectElement = document.getElementById("publicGameSelect");
-      const gamesSnap = await getDocs(collection(db, "tracer_games"));
-      selectElement.innerHTML = "";
+  function initGamesListListener(user) {
+      if(unsubGamesList) unsubGamesList();
+
+      let qGames;
+      if (user.uid === SUPER_ADMIN_UID) {
+          qGames = query(collection(db, "tracer_games"));
+      } else {
+          qGames = query(collection(db, "tracer_games"), where("createdBy", "==", user.uid));
+      }
+
+      unsubGamesList = onSnapshot(qGames, (snapshot) => {
+          const tbody = document.getElementById("games-list-body");
+          tbody.innerHTML = "";
+          allGamesData = {};
+          
+          if (snapshot.empty) {
+              tbody.innerHTML = `<tr><td colspan="2" style="color: #6e7681; text-align: center;">NO ACTIVE DIRECTORIES FOUND</td></tr>`;
+              return;
+          }
+
+          snapshot.forEach(docSnap => {
+              const game = docSnap.data();
+              allGamesData[docSnap.id] = game;
+              
+              let statusBadge = "";
+              if(game.isRaceLocked) statusBadge = `<span style="color:var(--red-gear); font-size:12px; margin-left: 8px;">[CONCLUDED]</span>`;
+              else if(game.codingStartTimestamp || game.isCodingLocked || game.codingAccumulatedMs > 0 || game.isEventInitiated) statusBadge = `<span style="color:var(--gold-accent); font-size:12px; margin-left: 8px;">[IN PROGRESS]</span>`;
+
+              tbody.innerHTML += `<tr>
+                  <td class="team-name" style="font-family: 'Orbitron', sans-serif;">${game.name} ${statusBadge}</td>
+                  <td>
+                      <button class="btn-primary" style="padding: 5px 10px; font-size:12px;" onclick="selectGame('${docSnap.id}')">SELECT</button>
+                      <button class="btn-restart" onclick="restartGame('${docSnap.id}', '${game.name}')">REBOOT</button>
+                      <button class="btn-red" onclick="deleteGame('${docSnap.id}', '${game.name}')">DEL</button>
+                  </td>
+              </tr>`;
+          });
+      });
+  }
+
+  window.createGame = async function() {
+      const name = document.getElementById("gameName").value.trim();
+      if(!name) return;
+      await addDoc(collection(db, "tracer_games"), { 
+          name: name, 
+          createdAt: new Date(), 
+          createdBy: auth.currentUser.uid, 
+          isEventInitiated: false,
+          codingStartTimestamp: null, 
+          codingAccumulatedMs: 0, 
+          isCodingPaused: false, 
+          isCodingLocked: false, 
+          isRaceLocked: false 
+      });
+      document.getElementById("gameName").value = "";
+  };
+
+  window.deleteGame = async function(id, name) {
+      if(confirm(`PURGE DIRECTORY: "${name}"?`)) {
+          if(currentGameId === id) {
+              currentGameId = null;
+              document.getElementById("activeGameDisplay").style.display = "none";
+          }
+          await deleteDoc(doc(db, "tracer_games", id));
+      }
+  };
+
+  window.restartGame = async function(id, name) {
+      if(!confirm(`⚠️ SYSTEM OVERRIDE: REBOOT "${name}"?\n\nAll coding times, race times, and modifiers will be zeroed out. Team units will remain in the roster.`)) return;
+
+      await updateDoc(doc(db, "tracer_games", id), {
+          isEventInitiated: false,
+          codingStartTimestamp: null,
+          codingAccumulatedMs: 0,
+          isCodingPaused: false,
+          isCodingLocked: false,
+          isRaceLocked: false
+      });
+
+      const teamsSnap = await getDocs(collection(db, "tracer_games", id, "teams"));
+      const resetPromises = [];
+      teamsSnap.forEach(tDoc => {
+          resetPromises.push(updateDoc(doc(db, "tracer_games", id, "teams", tDoc.id), {
+              codingTimeMs: null,
+              raceStartTimestamp: null,
+              raceTimeMs: null,
+              points: 0,
+              penalties: 0,
+              totalTimeMs: null
+          }));
+      });
+      await Promise.all(resetPromises);
+
+      alert(`SYSTEM REBOOTED: "${name}"\nAll time data wiped. Unit roster preserved.`);
+      selectGame(id);
+  };
+
+  window.selectGame = function(id) {
+      currentGameId = id;
+      document.getElementById("activeGameDisplay").style.display = "flex";
+      document.getElementById("targetGameLabel").innerText = `TARGET GAME: ${allGamesData[id].name}`;
       
-      if(gamesSnap.empty) {
-          selectElement.innerHTML = "<option>NO GAMES FOUND</option>";
+      if(unsubGame) unsubGame();
+      if(unsubTeams) unsubTeams();
+      clearInterval(globalTimerInterval);
+      for(let key in raceTimerIntervals) clearInterval(raceTimerIntervals[key]);
+
+      unsubGame = onSnapshot(doc(db, "tracer_games", currentGameId), (docSnap) => {
+          currentGameData = docSnap.data();
+          renderCodingControls();
+          renderTeamsTab(); 
+          renderCodeTab(); 
+          renderRaceTab();
+      });
+
+      unsubTeams = onSnapshot(collection(db, "tracer_games", currentGameId, "teams"), (snapshot) => {
+          currentTeamsList = [];
+          snapshot.forEach(d => currentTeamsList.push({ id: d.id, ...d.data() }));
+          currentTeamsList.sort((a,b) => a.name.localeCompare(b.name));
+          
+          renderTeamsTab();
+          renderCodeTab();
+          renderRaceTab();
+          checkAutoStopCoding(); 
+      });
+
+      switchTab('teamsTab', document.getElementById('tabBtn1'));
+  };
+
+  // --- Lock Event Function with Database State ---
+  window.lockTeamsAndProceed = async function() {
+      if(currentTeamsList.length < 1) return alert("MINIMUM 1 UNIT REQUIRED FOR SIMULATION.");
+      
+      await updateDoc(doc(db, "tracer_games", currentGameId), { 
+          isEventInitiated: true 
+      });
+
+      switchTab('codeTab', document.getElementById('tabBtn2'));
+  };
+
+  function renderTeamsTab() {
+      const hasStarted = currentGameData && (
+          currentGameData.isEventInitiated ||
+          currentGameData.codingStartTimestamp || 
+          currentGameData.codingAccumulatedMs > 0 || 
+          currentGameData.isCodingLocked
+      );
+      
+      if (hasStarted) {
+          document.getElementById("teamSetupControls").style.display = "none";
+          document.getElementById("doneTeamsBtn").style.display = "none";
+          document.getElementById("teamLockMessage").style.display = "block";
+      } else {
+          document.getElementById("teamSetupControls").style.display = "block";
+          document.getElementById("doneTeamsBtn").style.display = "block";
+          document.getElementById("teamLockMessage").style.display = "none";
+      }
+
+      document.getElementById("teamCount").innerText = currentTeamsList.length;
+      const tbody = document.getElementById("teams-list-body");
+      tbody.innerHTML = "";
+      
+      currentTeamsList.forEach(team => {
+          const actionHtml = hasStarted 
+              ? `<span style="color: #6e7681; font-style: italic;">LOCKED</span>` 
+              : `<button class="btn-red" onclick="deleteTeam('${team.id}')">DEL</button>`;
+          
+          tbody.innerHTML += `<tr><td class="team-name">${team.name}</td>
+          <td>${actionHtml}</td></tr>`;
+      });
+  }
+
+  window.addTeam = async function() {
+      const name = document.getElementById("teamName").value.trim();
+      if(!name || !currentGameId) return;
+      
+      await addDoc(collection(db, "tracer_games", currentGameId, "teams"), { 
+          name: name, 
+          createdBy: auth.currentUser.uid, 
+          codingTimeMs: null, 
+          raceStartTimestamp: null, 
+          raceTimeMs: null, 
+          points: 0, 
+          penalties: 0, 
+          totalTimeMs: null 
+      });
+      document.getElementById("teamName").value = ""; 
+  };
+  
+  window.deleteTeam = async function(id) {
+      if(confirm(`DELETE UNIT?`)) await deleteDoc(doc(db, "tracer_games", currentGameId, "teams", id));
+  };
+
+  function renderCodingControls() {
+      const ui = document.getElementById("globalTimerUI");
+      const controls = document.getElementById("codeControls");
+      const lockedMsg = document.getElementById("codeLockedUI");
+      const finishBtn = document.getElementById("finishCodingBtn");
+
+      if (!currentGameData) return;
+
+      if (currentGameData.isCodingLocked) {
+          clearInterval(globalTimerInterval);
+          controls.style.display = "none";
+          lockedMsg.style.display = "block";
+          if (finishBtn) finishBtn.style.display = "none";
+          ui.style.color = "#6e7681";
+          ui.style.textShadow = "none";
+          ui.innerHTML = formatTime(getGlobalElapsedCodingTime());
           return;
       }
 
-      gamesSnap.forEach(docSnap => { 
-          selectElement.innerHTML += `<option value="${docSnap.id}">${docSnap.data().name}</option>`; 
-      });
-      loadSelectedGame();
+      lockedMsg.style.display = "none";
+      if (finishBtn) finishBtn.style.display = "block";
+
+      const isRunning = currentGameData.codingStartTimestamp && !currentGameData.isCodingPaused;
+      const isPaused = currentGameData.isCodingPaused;
+
+      if (isRunning) {
+          controls.innerHTML = `
+              <button class="btn-manage" onclick="pauseGlobalCoding()" style="font-size: 16px; padding: 10px 20px;">⏸ PAUSE TIMER</button>
+              <button class="btn-red" onclick="resetGlobalCoding()" style="font-size: 14px;">RESET TIMER</button>
+          `;
+          ui.style.color = "var(--neon-green)";
+          ui.style.textShadow = "0 0 15px rgba(0,255,136,0.5)";
+          
+          clearInterval(globalTimerInterval);
+          globalTimerInterval = setInterval(() => {
+              ui.innerHTML = formatTime(getGlobalElapsedCodingTime());
+          }, 50);
+      } else if (isPaused) {
+          clearInterval(globalTimerInterval);
+          ui.innerHTML = formatTime(getGlobalElapsedCodingTime());
+          ui.style.color = "var(--gold-accent)";
+          ui.style.textShadow = "0 0 10px rgba(230,168,0,0.5)";
+          controls.innerHTML = `
+              <button class="btn-primary" onclick="resumeGlobalCoding()" style="font-size: 16px; padding: 10px 20px;">▶ RESUME TIMER</button>
+              <button class="btn-red" onclick="resetGlobalCoding()" style="font-size: 14px;">RESET TIMER</button>
+          `;
+      } else {
+          clearInterval(globalTimerInterval);
+          ui.innerHTML = formatTime(0);
+          ui.style.color = "white";
+          ui.style.textShadow = "none";
+          controls.innerHTML = `<button class="btn-primary" onclick="startGlobalCoding()" style="font-size: 18px; padding: 15px 30px;">▶ START CODING PHASE</button>`;
+      }
   }
-  loadGamesList();
 
-  window.loadSelectedGame = function() {
-      const gameId = document.getElementById("publicGameSelect").value;
-      if(!gameId || gameId === "NO GAMES FOUND") return;
-
-      if(unsubGameDoc) unsubGameDoc();
-      if(unsubTeams) unsubTeams();
-      clearInterval(publicTimerInterval);
-      previousTeamsMap = {};
-
-      // 1. Listen to Game Document for Live Coding Timer
-      unsubGameDoc = onSnapshot(doc(db, "tracer_games", gameId), (docSnap) => {
-          currentGameData = docSnap.data();
-          renderPublicTimer();
-      });
-
-      // 2. Listen to Teams for Realtime Auto-Sorting Leaderboard
-      unsubTeams = onSnapshot(collection(db, "tracer_games", gameId, "teams"), (snapshot) => {
-        let teams = [];
-        let newlyFinishedTeam = null;
-
-        snapshot.forEach(docSnap => {
-            let data = docSnap.data();
-            let teamId = docSnap.id;
-            
-            // Check if team just finished coding to trigger toast
-            if (previousTeamsMap[teamId] && previousTeamsMap[teamId].codingTimeMs === null && data.codingTimeMs !== null) {
-                newlyFinishedTeam = { name: data.name, timeMs: data.codingTimeMs };
-            }
-            
-            previousTeamsMap[teamId] = data;
-            teams.push({ id: teamId, ...data });
-        });
-
-        // Trigger brief banner notification if someone finished
-        if (newlyFinishedTeam) {
-            triggerFinishToast(newlyFinishedTeam.name, newlyFinishedTeam.timeMs);
-        }
-        
-        // --- REALTIME AUTO-SORTING ---
-        teams.sort((a, b) => {
-            // Priority 1: Sort by Final Total Time if available (Fastest first)
-            if (a.totalTimeMs !== null && b.totalTimeMs !== null) return a.totalTimeMs - b.totalTimeMs;
-            if (a.totalTimeMs !== null) return -1;
-            if (a.totalTimeMs !== null) return 1;
-
-            // Priority 2: Sort by Coding Time if currently in Coding Phase (Fastest first)
-            if (a.codingTimeMs !== null && b.codingTimeMs !== null) return a.codingTimeMs - b.codingTimeMs;
-            if (a.codingTimeMs !== null) return -1;
-            if (b.codingTimeMs !== null) return 1;
-
-            // Priority 3: Alphabetical fallback
-            return a.name.localeCompare(b.name);
-        });
-        
-        renderLeaderboardTable(teams);
+  window.startGlobalCoding = async function() {
+      await updateDoc(doc(db, "tracer_games", currentGameId), { 
+          codingStartTimestamp: Date.now(),
+          codingAccumulatedMs: 0,
+          isCodingPaused: false 
       });
   };
 
-  function renderPublicTimer() {
-      const box = document.getElementById("publicTimerBox");
-      const title = document.getElementById("publicTimerTitle");
-      const ui = document.getElementById("publicTimerDisplay");
+  window.pauseGlobalCoding = async function() {
+      if (!currentGameData.codingStartTimestamp || currentGameData.isCodingPaused) return;
+      const currentRun = Date.now() - currentGameData.codingStartTimestamp;
+      const totalAccum = (currentGameData.codingAccumulatedMs || 0) + currentRun;
+      
+      await updateDoc(doc(db, "tracer_games", currentGameId), {
+          codingStartTimestamp: null,
+          codingAccumulatedMs: totalAccum,
+          isCodingPaused: true
+      });
+  };
 
-      if (!currentGameData || currentGameData.isCodingLocked) {
-          clearInterval(publicTimerInterval);
-          box.style.display = "none";
-          return;
-      }
+  window.resumeGlobalCoding = async function() {
+      await updateDoc(doc(db, "tracer_games", currentGameId), {
+          codingStartTimestamp: Date.now(),
+          isCodingPaused: false
+      });
+  };
 
-      const isStarted = currentGameData.codingStartTimestamp || currentGameData.codingAccumulatedMs > 0;
+  window.resetGlobalCoding = async function() {
+      if(!confirm("Reset timer? All team coding times will be wiped.")) return;
+      await updateDoc(doc(db, "tracer_games", currentGameId), { 
+          codingStartTimestamp: null, 
+          codingAccumulatedMs: 0,
+          isCodingPaused: false,
+          isCodingLocked: false 
+      });
+      currentTeamsList.forEach(t => {
+          updateDoc(doc(db, "tracer_games", currentGameId, "teams", t.id), { codingTimeMs: null, totalTimeMs: null });
+      });
+  };
 
-      if (isStarted) {
-          box.style.display = "block";
-          const isRunning = currentGameData.codingStartTimestamp && !currentGameData.isCodingPaused;
-
-          if (isRunning) {
-              title.innerText = "GLOBAL CODING PHASE - IN PROGRESS";
-              
-              if (!toastTimeout) {
-                  ui.className = "public-timer-display";
-                  ui.style.color = "var(--neon-green)";
-                  ui.style.textShadow = "0 0 15px rgba(0,255,136,0.5)";
-              }
-              
-              clearInterval(publicTimerInterval);
-              publicTimerInterval = setInterval(() => {
-                  if (!toastTimeout) { 
-                      ui.innerText = formatTime(getGlobalElapsedCodingTime());
-                  }
-              }, 50);
-          } else {
-              clearInterval(publicTimerInterval);
-              title.innerText = "GLOBAL CODING PHASE - PAUSED";
-              if (!toastTimeout) {
-                  ui.className = "public-timer-display";
-                  ui.style.color = "var(--gold-accent)";
-                  ui.style.textShadow = "0 0 10px rgba(230,168,0,0.5)";
-                  ui.innerText = formatTime(getGlobalElapsedCodingTime());
-              }
-          }
+  window.lockCodingPhase = async function() {
+      const unfinishedTeams = currentTeamsList.filter(t => t.codingTimeMs === null);
+      
+      if (unfinishedTeams.length > 0) {
+          const names = unfinishedTeams.map(t => `• ${t.name}`).join('\n');
+          if(!confirm(`⚠️ WARNING: ${unfinishedTeams.length} team(s) have NOT completed coding:\n\n${names}\n\nAre you sure you want to finish coding phase and lock the times anyway?`)) return;
       } else {
-          clearInterval(publicTimerInterval);
-          box.style.display = "none";
+          if(!confirm("🏁 FINISH CODING PHASE?\n\nThis will stop the global timer and lock all coding results.")) return;
+      }
+
+      let finalAccum = getGlobalElapsedCodingTime();
+
+      await updateDoc(doc(db, "tracer_games", currentGameId), { 
+          isCodingLocked: true,
+          isCodingPaused: false,
+          codingStartTimestamp: null,
+          codingAccumulatedMs: finalAccum
+      });
+      switchTab('raceTab', document.getElementById('tabBtn3'));
+  };
+
+  async function checkAutoStopCoding() {
+      if (!currentGameData || currentGameData.isCodingLocked) return;
+      if (!currentGameData.codingStartTimestamp && !currentGameData.isCodingPaused) return;
+      if (currentTeamsList.length === 0) return;
+
+      const allFinished = currentTeamsList.every(t => t.codingTimeMs !== null);
+      if (allFinished) {
+          let finalAccum = getGlobalElapsedCodingTime();
+          await updateDoc(doc(db, "tracer_games", currentGameId), { 
+              isCodingLocked: true,
+              isCodingPaused: false,
+              codingStartTimestamp: null,
+              codingAccumulatedMs: finalAccum
+          });
+          
+          setTimeout(() => {
+              alert("⚡ ALL TEAMS HAVE COMPLETED CODING!\n\nCoding phase timer has automatically stopped and locked. Proceeding to Race Phase.");
+              switchTab('raceTab', document.getElementById('tabBtn3'));
+          }, 200);
       }
   }
 
-  function triggerFinishToast(teamName, timeMs) {
-      const box = document.getElementById("publicTimerBox");
-      const title = document.getElementById("publicTimerTitle");
-      const ui = document.getElementById("publicTimerDisplay");
-
-      box.style.display = "block";
+  function renderCodeTab() {
+      const tbody = document.getElementById("code-list-body");
+      tbody.innerHTML = "";
       
-      // Temporarily override display with banner
-      title.innerText = "⚡ UNIT CODING COMPLETED!";
-      ui.className = "public-timer-toast";
-      ui.innerText = `${teamName} : ${formatTime(timeMs)}`;
+      const isTimerRunning = currentGameData && currentGameData.codingStartTimestamp && !currentGameData.isCodingPaused;
 
-      if (toastTimeout) clearTimeout(toastTimeout);
+      currentTeamsList.forEach(team => {
+          let timeDisplay = team.codingTimeMs !== null ? formatTime(team.codingTimeMs) : "PENDING";
+          let actionBtn = "";
+          
+          if(currentGameData && currentGameData.isCodingLocked) {
+              actionBtn = `<span style="color:#6e7681; font-family: 'Orbitron', sans-serif;">LOCKED</span>`;
+          } else if (team.codingTimeMs !== null) {
+              actionBtn = `<button class="btn-manage" onclick="resetTeamCoding('${team.id}')">REDO</button>`;
+          } else {
+              let disabled = isTimerRunning ? "" : "disabled";
+              let btnClass = isTimerRunning ? "btn-green" : "btn-gray";
+              actionBtn = `<button class="${btnClass}" ${disabled} onclick="stopTeamCoding('${team.id}')">✅ DONE</button>`;
+          }
 
-      // Revert back to timer after 4 seconds
-      toastTimeout = setTimeout(() => {
-          toastTimeout = null;
-          ui.className = "public-timer-display";
-          renderPublicTimer();
-      }, 4000);
-  }
-
-  function renderLeaderboardTable(teams) {
-      const tbody = document.getElementById("leaderboard-body");
-      let htmlBuffer = ""; 
-      
-      if (teams.length === 0) {
-          tbody.innerHTML = "<tr><td colspan='6' style='color: #8b949e;'>NO TEAMS REGISTERED IN THIS CATEGORY.</td></tr>";
-          return;
-      }
-
-      teams.forEach((team, index) => {
-        let codeStr = formatTime(team.codingTimeMs);
-        let raceStr = formatTime(team.raceTimeMs);
-
-        let modHtml = "";
-        if(team.points > 0) modHtml += `<span class="mod-chip mod-green">-${team.points * 10}s</span>`;
-        if(team.penalties > 0) modHtml += `<span class="mod-chip mod-red">+${team.penalties * 10}s</span>`;
-        if(!modHtml) modHtml = `<span style="color:#6e7681">-</span>`;
-
-        let totalHtml = team.totalTimeMs !== null 
-            ? `<span class="total-time-box time-font">${formatTime(team.totalTimeMs)}</span>` 
-            : `<span class="pending-box">IN PROGRESS</span>`;
-
-        let codeColor = team.codingTimeMs !== null ? 'var(--gold-accent)' : '#8b949e';
-        let raceColor = team.raceTimeMs !== null ? 'var(--gold-accent)' : '#8b949e';
-        let rankClass = (index === 0 && (team.totalTimeMs !== null || team.codingTimeMs !== null)) ? 'rank-1' : '';
-
-        htmlBuffer += `
-          <tr class="${rankClass}">
-            <td class="time-font" style="color: white;">${index + 1}</td>
-            <td class="team-name">${team.name}</td>
-            <td class="time-font" style="color: ${codeColor}">${codeStr}</td>
-            <td class="time-font" style="color: ${raceColor}">${raceStr}</td>
-            <td><div style="display: flex; justify-content: center; align-items: center; gap: 4px;">${modHtml}</div></td>
-            <td>${totalHtml}</td>
+          tbody.innerHTML += `<tr>
+              <td class="team-name">${team.name}</td>
+              <td class="timer-display" style="color: ${team.codingTimeMs !== null ? 'var(--gold-accent)' : 'white'};">${timeDisplay}</td>
+              <td>${actionBtn}</td>
           </tr>`;
       });
-      
-      tbody.innerHTML = htmlBuffer;
   }
-</script>
 
+  window.stopTeamCoding = async function(teamId) {
+      if (!currentGameData || !currentGameData.codingStartTimestamp || currentGameData.isCodingPaused) return;
+      const elapsed = getGlobalElapsedCodingTime();
+      
+      const team = currentTeamsList.find(t => t.id === teamId);
+      let updateObj = { codingTimeMs: elapsed };
+      
+      if (team && team.raceTimeMs !== null) {
+          let pts = team.points || 0;
+          let pens = team.penalties || 0;
+          let total = elapsed + team.raceTimeMs - (pts * 10000) + (pens * 10000);
+          updateObj.totalTimeMs = Math.max(0, total);
+      }
+      
+      await updateDoc(doc(db, "tracer_games", currentGameId, "teams", teamId), updateObj);
+  };
+  
+  window.resetTeamCoding = async function(teamId) {
+      await updateDoc(doc(db, "tracer_games", currentGameId, "teams", teamId), { codingTimeMs: null, totalTimeMs: null });
+  };
+
+  function renderRaceTab() {
+      const tbody = document.getElementById("race-list-body");
+      tbody.innerHTML = "";
+      
+      const isRaceLocked = currentGameData && currentGameData.isRaceLocked;
+
+      if (isRaceLocked) {
+          document.getElementById("raceLockedUI").style.display = "block";
+          document.getElementById("raceInfoMsg").style.display = "none";
+          document.getElementById("finishRaceBtn").style.display = "none";
+      } else {
+          document.getElementById("raceLockedUI").style.display = "none";
+          document.getElementById("raceInfoMsg").style.display = "block";
+          document.getElementById("finishRaceBtn").style.display = "block";
+      }
+
+      currentTeamsList.forEach(team => {
+          let timeDisplay = formatTime(0);
+          let raceControls = "";
+          let timerColor = "white";
+          
+          if(isRaceLocked) {
+              timeDisplay = team.raceTimeMs !== null ? formatTime(team.raceTimeMs) : formatTime(0);
+              timerColor = team.raceTimeMs !== null ? "var(--gold-accent)" : "#6e7681";
+              raceControls = `<span style="color:#6e7681; font-family: 'Orbitron', sans-serif;">LOCKED</span>`;
+          } else if(team.raceTimeMs !== null) {
+              timeDisplay = formatTime(team.raceTimeMs);
+              timerColor = "var(--gold-accent)";
+              raceControls = `<button class="btn-manage" onclick="resetTeamRace('${team.id}')">↺ REDO</button>`;
+              clearInterval(raceTimerIntervals[team.id]);
+          } else if (team.raceStartTimestamp !== null) {
+              timerColor = "var(--neon-green)";
+              raceControls = `<button class="btn-red" onclick="stopTeamRace('${team.id}')">⏹ STOP</button>`;
+              if(!raceTimerIntervals[team.id]) {
+                  raceTimerIntervals[team.id] = setInterval(() => {
+                      const el = document.getElementById(`raceTime_${team.id}`);
+                      if(el) el.innerHTML = formatTime(Date.now() - team.raceStartTimestamp);
+                  }, 50);
+              }
+          } else {
+              raceControls = `<button class="btn-primary" style="padding: 5px 15px;" onclick="startTeamRace('${team.id}')">▶ START</button>`;
+          }
+
+          const disMod = isRaceLocked ? "disabled style='opacity:0.5; cursor:not-allowed;'" : "";
+
+          tbody.innerHTML += `<tr>
+              <td class="team-name" style="width: 30%;">${team.name}</td>
+              <td class="timer-display" id="raceTime_${team.id}" style="color: ${timerColor};">${timeDisplay}</td>
+              <td>${raceControls}</td>
+              <td class="mod-controls">
+                  <button class="btn-green mod-btn" ${disMod} onclick="addModifier('${team.id}', 'points')">
+                      + POINT <span class="mod-count">${team.points || 0}</span>
+                  </button>
+                  <button class="btn-red mod-btn" ${disMod} onclick="addModifier('${team.id}', 'penalties')">
+                      + PENALTY <span class="mod-count">${team.penalties || 0}</span>
+                  </button>
+                  <button class="btn-manage mod-btn" ${disMod} title="Reset Mods" onclick="resetModifiers('${team.id}')" style="margin-left: 5px;">↺</button>
+              </td>
+          </tr>`;
+      });
+  }
+
+  window.startTeamRace = async function(teamId) {
+      if(currentGameData && currentGameData.isRaceLocked) return alert("RACE PHASE IS LOCKED.");
+      await updateDoc(doc(db, "tracer_games", currentGameId, "teams", teamId), { raceStartTimestamp: Date.now() });
+  };
+
+  window.stopTeamRace = async function(teamId) {
+      if(currentGameData && currentGameData.isRaceLocked) return alert("RACE PHASE IS LOCKED.");
+      const team = currentTeamsList.find(t => t.id === teamId);
+      if(!team || !team.raceStartTimestamp) return;
+      const elapsed = Date.now() - team.raceStartTimestamp;
+      
+      let updateObj = { raceTimeMs: elapsed, raceStartTimestamp: null };
+      
+      if (team.codingTimeMs !== null) {
+          let pts = team.points || 0;
+          let pens = team.penalties || 0;
+          let total = team.codingTimeMs + elapsed - (pts * 10000) + (pens * 10000);
+          updateObj.totalTimeMs = Math.max(0, total);
+      }
+
+      await updateDoc(doc(db, "tracer_games", currentGameId, "teams", teamId), updateObj);
+  };
+
+  window.resetTeamRace = async function(teamId) {
+      if(currentGameData && currentGameData.isRaceLocked) return alert("RACE PHASE IS LOCKED.");
+      if(!confirm("Reset race time for this team? They can run the race again.")) return;
+      await updateDoc(doc(db, "tracer_games", currentGameId, "teams", teamId), { raceTimeMs: null, raceStartTimestamp: null, totalTimeMs: null });
+  };
+
+  window.addModifier = async function(teamId, type) {
+      if(currentGameData && currentGameData.isRaceLocked) return alert("RACE PHASE IS LOCKED.");
+      const team = currentTeamsList.find(t => t.id === teamId);
+      const newVal = (team[type] || 0) + 1;
+      
+      let updateObj = { [type]: newVal };
+      
+      if (team.codingTimeMs !== null && team.raceTimeMs !== null) {
+          let pts = type === 'points' ? newVal : (team.points || 0);
+          let pens = type === 'penalties' ? newVal : (team.penalties || 0);
+          let total = team.codingTimeMs + team.raceTimeMs - (pts * 10000) + (pens * 10000);
+          updateObj.totalTimeMs = Math.max(0, total);
+      }
+
+      await updateDoc(doc(db, "tracer_games", currentGameId, "teams", teamId), updateObj);
+  };
+
+  window.resetModifiers = async function(teamId) {
+      if(currentGameData && currentGameData.isRaceLocked) return alert("RACE PHASE IS LOCKED.");
+      const team = currentTeamsList.find(t => t.id === teamId);
+      let updateObj = { points: 0, penalties: 0 };
+      
+      if (team.codingTimeMs !== null && team.raceTimeMs !== null) {
+          let total = team.codingTimeMs + team.raceTimeMs;
+          updateObj.totalTimeMs = Math.max(0, total);
+      }
+
+      await updateDoc(doc(db, "tracer_games", currentGameId, "teams", teamId), updateObj);
+  };
+
+  window.lockRacePhase = async function() {
+      const unfinishedTeams = currentTeamsList.filter(t => t.raceTimeMs === null);
+
+      if (unfinishedTeams.length > 0) {
+          const names = unfinishedTeams.map(t => `• ${t.name}`).join('\n');
+          const warningMsg = `⚠️ WARNING: ${unfinishedTeams.length} team(s) have NOT finished racing:\n\n${names}\n\nAre you sure you want to lock the race phase and finalize the results anyway?`;
+          if (!confirm(warningMsg)) return;
+      } else {
+          if (!confirm("🏁 TERMINATE RACE PHASE?\n\nThis will lock all race times, modifiers, and final leaderboard standings.")) return;
+      }
+
+      await updateDoc(doc(db, "tracer_games", currentGameId), { isRaceLocked: true });
+      alert("RACE PHASE TERMINATED. RESULTS LOCKED.");
+  };
+
+  // --- SUPER ADMIN EXCLUSIVE: PDF REPORT GENERATOR ---
+  window.generateResultsPDF = function() {
+      if (!currentGameData || !currentGameId) return alert("SELECT A TARGET GAME FIRST.");
+      
+      let sortedTeams = [...currentTeamsList];
+      sortedTeams.sort((a, b) => {
+          if (a.totalTimeMs !== null && b.totalTimeMs !== null) return a.totalTimeMs - b.totalTimeMs;
+          if (a.totalTimeMs !== null) return -1;
+          if (b.totalTimeMs !== null) return 1;
+          return a.name.localeCompare(b.name);
+      });
+
+      const currentDate = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+      let rowsHtml = "";
+      sortedTeams.forEach((team, index) => {
+          let codeStr = formatTimePlain(team.codingTimeMs);
+          let raceStr = formatTimePlain(team.raceTimeMs);
+          let totalStr = team.totalTimeMs !== null ? formatTimePlain(team.totalTimeMs) : "IN PROGRESS";
+
+          let modStr = "";
+          if (team.points > 0) modStr += `-${team.points * 10}s `;
+          if (team.penalties > 0) modStr += `+${team.penalties * 10}s`;
+          if (!modStr) modStr = "None";
+
+          rowsHtml += `
+              <tr>
+                  <td style="text-align:center; font-weight:bold;">${index + 1}</td>
+                  <td style="font-weight:bold;">${team.name}</td>
+                  <td style="text-align:center; font-family: monospace;">${codeStr}</td>
+                  <td style="text-align:center; font-family: monospace;">${raceStr}</td>
+                  <td style="text-align:center;">${modStr}</td>
+                  <td style="text-align:center; font-weight:bold; font-family: monospace; color: #1a202c;">${totalStr}</td>
+              </tr>
+          `;
+      });
+
+      const reportWindow = window.open('', '_blank');
+      reportWindow.document.write(`
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <title>OFFICIAL REPORT - ${currentGameData.name}</title>
+              <style>
+                  body { font-family: 'Arial', sans-serif; padding: 30px; color: #2d3748; }
+                  .header { text-align: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; margin-bottom: 20px; }
+                  .title { font-size: 24px; font-weight: bold; color: #1a202c; text-transform: uppercase; }
+                  .subtitle { font-size: 14px; color: #718096; margin-top: 5px; }
+                  table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                  th, td { border: 1px solid #cbd5e0; padding: 10px; font-size: 13px; }
+                  th { background-color: #edf2f7; color: #2d3748; text-transform: uppercase; font-size: 11px; letter-spacing: 1px; }
+                  tr:nth-child(even) { background-color: #f7fafc; }
+                  .footer { margin-top: 40px; text-align: right; font-size: 12px; color: #a0aec0; }
+                  @media print {
+                      body { padding: 0; }
+                      button { display: none; }
+                  }
+              </style>
+          </head>
+          <body>
+              <div class="header">
+                  <div class="title">MAKEROBOT TRACER - OFFICIAL TOURNAMENT REPORT</div>
+                  <div class="subtitle">CATEGORY: ${currentGameData.name} | DATE: ${currentDate}</div>
+              </div>
+              <table>
+                  <thead>
+                      <tr>
+                          <th>RANK</th>
+                          <th style="text-align:left;">TEAM UNIT</th>
+                          <th>CODING TIME</th>
+                          <th>RACE TIME</th>
+                          <th>MODIFIERS</th>
+                          <th>FINAL TOTAL TIME</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                      ${rowsHtml}
+                  </tbody>
+              </table>
+              <div class="footer">Generated by Makerobot Super Admin System</div>
+              <script>
+                  window.onload = function() {
+                      window.print();
+                  };
+              <\/script>
+          </body>
+          </html>
+      `);
+      reportWindow.document.close();
+  };
+
+</script>
 </body>
 </html>
