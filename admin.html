@@ -460,7 +460,6 @@
       switchTab('teamsTab', document.getElementById('tabBtn1'));
   };
 
-  // --- Lock Event Function with Database State ---
   window.lockTeamsAndProceed = async function() {
       if(currentTeamsList.length < 1) return alert("MINIMUM 1 UNIT REQUIRED FOR SIMULATION.");
       
@@ -543,6 +542,9 @@
           return;
       }
 
+      // FIX: Ensure controls container is unhidden if a reboot just happened
+      controls.style.display = "flex"; 
+      
       lockedMsg.style.display = "none";
       if (finishBtn) finishBtn.style.display = "block";
 
