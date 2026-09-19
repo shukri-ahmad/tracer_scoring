@@ -184,7 +184,7 @@
 
     <!-- TAB 1: Teams -->
     <div id="teamsTab" class="tab-content">
-        <div id="teamLockMessage" class="lock-msg">SYSTEM LOCKED: CODING PHASE INITIATED. ROSTER IS LOCKED.</div>
+        <div id="teamLockMessage" class="lock-msg">SYSTEM LOCKED: EVENT INITIATED. ROSTER IS LOCKED.</div>
         <div id="teamSetupControls">
             <h3>REGISTER TEAM UNIT</h3>
             <input type="text" id="teamName" placeholder="Enter Team Designation">
@@ -275,7 +275,7 @@
         if (isUserSuperAdmin) {
             roleBadge.innerText = "SUPER ADMIN";
             roleBadge.className = "role-badge role-super";
-            pdfBtn.style.display = "inline-block"; // Show PDF button only for Super Admin
+            pdfBtn.style.display = "inline-block";
         } else {
             roleBadge.innerText = "ORGANIZER";
             roleBadge.className = "role-badge role-admin";
@@ -357,7 +357,7 @@
               
               let statusBadge = "";
               if(game.isRaceLocked) statusBadge = `<span style="color:var(--red-gear); font-size:12px; margin-left: 8px;">[CONCLUDED]</span>`;
-              else if(game.codingStartTimestamp || game.isCodingLocked || game.codingAccumulatedMs > 0) statusBadge = `<span style="color:var(--gold-accent); font-size:12px; margin-left: 8px;">[IN PROGRESS]</span>`;
+              else if(game.codingStartTimestamp || game.isCodingLocked || game.codingAccumulatedMs > 0 || game.isEventInitiated) statusBadge = `<span style="color:var(--gold-accent); font-size:12px; margin-left: 8px;">[IN PROGRESS]</span>`;
 
               tbody.innerHTML += `<tr>
                   <td class="team-name" style="font-family: 'Orbitron', sans-serif;">${game.name} ${statusBadge}</td>
@@ -378,6 +378,7 @@
           name: name, 
           createdAt: new Date(), 
           createdBy: auth.currentUser.uid, 
+          isEventInitiated: false,
           codingStartTimestamp: null, 
           codingAccumulatedMs: 0, 
           isCodingPaused: false, 
@@ -401,6 +402,7 @@
       if(!confirm(`⚠️ SYSTEM OVERRIDE: REBOOT "${name}"?\n\nAll coding times, race times, and modifiers will be zeroed out. Team units will remain in the roster.`)) return;
 
       await updateDoc(doc(db, "tracer_games", id), {
+          isEventInitiated: false,
           codingStartTimestamp: null,
           codingAccumulatedMs: 0,
           isCodingPaused: false,
@@ -458,13 +460,24 @@
       switchTab('teamsTab', document.getElementById('tabBtn1'));
   };
 
-  window.lockTeamsAndProceed = function() {
+  // --- Lock Event Function with Database State ---
+  window.lockTeamsAndProceed = async function() {
       if(currentTeamsList.length < 1) return alert("MINIMUM 1 UNIT REQUIRED FOR SIMULATION.");
+      
+      await updateDoc(doc(db, "tracer_games", currentGameId), { 
+          isEventInitiated: true 
+      });
+
       switchTab('codeTab', document.getElementById('tabBtn2'));
   };
 
   function renderTeamsTab() {
-      const hasStarted = currentGameData && (currentGameData.codingStartTimestamp || currentGameData.codingAccumulatedMs > 0 || currentGameData.isCodingLocked);
+      const hasStarted = currentGameData && (
+          currentGameData.isEventInitiated ||
+          currentGameData.codingStartTimestamp || 
+          currentGameData.codingAccumulatedMs > 0 || 
+          currentGameData.isCodingLocked
+      );
       
       if (hasStarted) {
           document.getElementById("teamSetupControls").style.display = "none";
