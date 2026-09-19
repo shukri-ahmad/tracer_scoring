@@ -81,7 +81,7 @@
             to { box-shadow: 0 0 25px rgba(0, 229, 255, 0.5); }
         }
 
-        /* Toast Popup */
+        /* Toast Popups */
         .public-timer-toast {
             font-size: 1.8em;
             font-family: 'Orbitron', sans-serif;
@@ -101,6 +101,28 @@
         @keyframes pulseGlow {
             from { box-shadow: 0 0 10px var(--neon-green); }
             to { box-shadow: 0 0 25px var(--neon-green); }
+        }
+
+        /* NEW: Race Finish Toast (Cyan) */
+        .race-widget-toast {
+            font-size: 1.8em;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+            color: #0d1117 !important;
+            background: var(--cyan-glow);
+            padding: 10px 15px;
+            border-radius: 6px;
+            box-shadow: 0 0 20px var(--cyan-glow);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 8px;
+            display: inline-block;
+            animation: pulseCyan 1s infinite alternate;
+        }
+
+        @keyframes pulseCyan {
+            from { box-shadow: 0 0 10px rgba(0, 229, 255, 0.5); }
+            to { box-shadow: 0 0 25px rgba(0, 229, 255, 1); }
         }
 
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 17px; }
@@ -150,7 +172,7 @@
         <div id="publicTimerDisplay" class="public-timer-display" style="color: var(--neon-green); text-shadow: 0 0 15px rgba(0,255,136,0.5);">00:00.00</div>
     </div>
 
-    <!-- NEW: Live Race Timer Widget -->
+    <!-- Live Race Timer Widget -->
     <div id="raceTimerBox" class="public-timer-box race-widget-border">
         <div id="raceTimerTitle" class="public-timer-title race-widget-title">LIVE RUN: [TEAM]</div>
         <div id="raceTimerDisplay" class="public-timer-display race-widget-timer">00:00.00</div>
@@ -194,11 +216,14 @@
   let unsubGameDoc = null;
   let unsubTeams = null;
   let publicTimerInterval = null;
-  let liveRaceInterval = null; // New interval for the racing team
+  let liveRaceInterval = null; 
   
   let currentGameData = null;
   let previousTeamsMap = {};
+  
   let toastTimeout = null;
+  let raceToastTimeout = null;
+  let currentActiveRacer = null;
 
   function formatTimerWidget(ms) {
       if(ms === null || ms === undefined || ms < 0) return "--:--.--";
@@ -268,16 +293,22 @@
 
       unsubTeams = onSnapshot(collection(db, "tracer_games", gameId, "teams"), (snapshot) => {
         let teams = [];
-        let newlyFinishedTeam = null;
-        let activeRacer = null; // Track who is currently on the track
+        let newlyFinishedCodingTeam = null;
+        let newlyFinishedRaceTeam = null;
+        let activeRacer = null;
 
         snapshot.forEach(docSnap => {
             let data = docSnap.data();
             let teamId = docSnap.id;
             
-            // Check for coding finish toast
+            // Check for coding finish
             if (previousTeamsMap[teamId] && previousTeamsMap[teamId].codingTimeMs === null && data.codingTimeMs !== null) {
-                newlyFinishedTeam = { name: data.name, timeMs: data.codingTimeMs };
+                newlyFinishedCodingTeam = { name: data.name, timeMs: data.codingTimeMs };
+            }
+
+            // Check for race finish
+            if (previousTeamsMap[teamId] && previousTeamsMap[teamId].raceTimeMs === null && data.raceTimeMs !== null) {
+                newlyFinishedRaceTeam = { name: data.name, timeMs: data.raceTimeMs };
             }
 
             // Check if this team is actively running the race
@@ -289,14 +320,18 @@
             teams.push({ id: teamId, ...data });
         });
 
-        // Trigger coding toast if applicable
-        if (newlyFinishedTeam) {
-            triggerFinishToast(newlyFinishedTeam.name, newlyFinishedTeam.timeMs);
+        // Trigger finish toasts
+        if (newlyFinishedCodingTeam) {
+            triggerFinishToast(newlyFinishedCodingTeam.name, newlyFinishedCodingTeam.timeMs);
+        }
+        if (newlyFinishedRaceTeam) {
+            triggerRaceFinishToast(newlyFinishedRaceTeam.name, newlyFinishedRaceTeam.timeMs);
         }
 
         // Render the Active Live Race Widget
         renderLiveRaceWidget(activeRacer);
         
+        // --- REALTIME AUTO-SORTING ---
         teams.sort((a, b) => {
             if (a.totalTimeMs !== null && b.totalTimeMs !== null) return a.totalTimeMs - b.totalTimeMs;
             if (a.totalTimeMs !== null) return -1;
@@ -313,16 +348,26 @@
       });
   };
 
-  // --- NEW: Live Race Widget Logic ---
   function renderLiveRaceWidget(activeRacer) {
+      currentActiveRacer = activeRacer;
+
+      // If a race toast is actively showing AND no new race has started, let the toast finish
+      if (raceToastTimeout && !activeRacer) return; 
+
+      // If a new race starts while a toast is still showing, override the toast immediately
+      if (raceToastTimeout && activeRacer) {
+          clearTimeout(raceToastTimeout);
+          raceToastTimeout = null;
+      }
+
       const raceBox = document.getElementById("raceTimerBox");
       const raceTitle = document.getElementById("raceTimerTitle");
       const raceUI = document.getElementById("raceTimerDisplay");
 
       if (activeRacer) {
-          // Show widget and start ticking
           raceBox.style.display = "block";
           raceTitle.innerText = `🟢 LIVE ON TRACK: ${activeRacer.name}`;
+          raceUI.className = "public-timer-display race-widget-timer"; // Ensure it resets from toast styling
           
           clearInterval(liveRaceInterval);
           liveRaceInterval = setInterval(() => {
@@ -330,26 +375,47 @@
               raceUI.innerHTML = formatTimerWidget(elapsed);
           }, 50);
 
-          // Force hide the global coding timer so they don't fight for attention
           document.getElementById("publicTimerBox").style.display = "none";
       } else {
-          // Hide widget and clear interval
           clearInterval(liveRaceInterval);
           raceBox.style.display = "none";
-          
-          // Restore global coding timer if it should be visible
           renderPublicTimer();
       }
   }
 
+  function triggerRaceFinishToast(teamName, timeMs) {
+      // Don't show toast if someone else just immediately started racing (Admin was fast!)
+      if (currentActiveRacer) return;
+      
+      const raceBox = document.getElementById("raceTimerBox");
+      const raceTitle = document.getElementById("raceTimerTitle");
+      const raceUI = document.getElementById("raceTimerDisplay");
+
+      raceBox.style.display = "block";
+      raceTitle.innerText = "🏁 RACE COMPLETED!";
+      raceUI.className = "race-widget-toast";
+      raceUI.innerText = `${teamName} : ${formatTime(timeMs)}`;
+
+      // Hide global timer just in case
+      document.getElementById("publicTimerBox").style.display = "none";
+
+      if (raceToastTimeout) clearTimeout(raceToastTimeout);
+
+      raceToastTimeout = setTimeout(() => {
+          raceToastTimeout = null;
+          raceUI.className = "public-timer-display race-widget-timer";
+          renderLiveRaceWidget(currentActiveRacer); // This will naturally hide it and restore coding timer if needed
+      }, 4000);
+  }
+
   function renderPublicTimer() {
-      if (toastTimeout) return;
+      if (toastTimeout) return; // Prevent overwriting coding finish toast
+      if (raceToastTimeout || currentActiveRacer) return; // Don't show if race widget is active
 
       const box = document.getElementById("publicTimerBox");
       const title = document.getElementById("publicTimerTitle");
       const ui = document.getElementById("publicTimerDisplay");
 
-      // Don't show global timer if race is locked or data is missing
       if (!currentGameData || currentGameData.isCodingLocked) {
           clearInterval(publicTimerInterval);
           box.style.display = "none";
@@ -359,12 +425,6 @@
       const isStarted = currentGameData.codingStartTimestamp || currentGameData.codingAccumulatedMs > 0;
 
       if (isStarted) {
-          // If a team is racing right now, the Race widget handles the top spot, keep global hidden
-          if (document.getElementById("raceTimerBox").style.display === "block") {
-              box.style.display = "none";
-              return;
-          }
-
           box.style.display = "block";
           const isRunning = currentGameData.codingStartTimestamp && !currentGameData.isCodingPaused;
 
@@ -395,8 +455,8 @@
   }
 
   function triggerFinishToast(teamName, timeMs) {
-      // Don't show coding toast if someone is actively racing (prevents overlapping widgets)
-      if (document.getElementById("raceTimerBox").style.display === "block") return;
+      // Don't show coding toast if someone is actively racing or a race toast is showing
+      if (currentActiveRacer || raceToastTimeout) return;
 
       const box = document.getElementById("publicTimerBox");
       const title = document.getElementById("publicTimerTitle");
@@ -417,7 +477,6 @@
       }, 4000);
   }
 
-  // Added activeRacerId parameter to highlight the row
   function renderLeaderboardTable(teams, activeRacerId) {
       const tbody = document.getElementById("leaderboard-body");
       let htmlBuffer = ""; 
@@ -445,9 +504,9 @@
         
         let rowClass = "";
         if (team.id === activeRacerId) {
-            rowClass = "active-racer-row"; // Makes the current racer's row glow blue
+            rowClass = "active-racer-row";
         } else if (index === 0 && (team.totalTimeMs !== null || team.codingTimeMs !== null)) {
-            rowClass = "rank-1"; // Standard gold highlight for 1st place
+            rowClass = "rank-1";
         }
 
         htmlBuffer += `
