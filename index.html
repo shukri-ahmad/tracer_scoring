@@ -53,6 +53,7 @@
             text-transform: uppercase;
         }
 
+        /* Fixed Digit Alignment Display for Widget Timer */
         .public-timer-display {
             font-size: 3em;
             font-family: 'Orbitron', monospace;
@@ -60,15 +61,24 @@
             color: var(--neon-green);
             text-shadow: 0 0 15px rgba(0,255,136,0.5);
             margin: 5px 0 0 0;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
             white-space: nowrap;
         }
 
-        /* FIX: High contrast black text on neon green banner */
+        .public-timer-display .digit-slot {
+            display: inline-block;
+            width: 0.75em;
+            text-align: center;
+        }
+
+        /* High contrast black text on neon green banner */
         .public-timer-toast {
             font-size: 1.8em;
             font-family: 'Orbitron', sans-serif;
             font-weight: 900;
-            color: #0d1117 !important; /* Force dark text color */
+            color: #0d1117 !important;
             background: var(--neon-green);
             padding: 10px 15px;
             border-radius: 6px;
@@ -174,6 +184,23 @@
   let previousTeamsMap = {};
   let toastTimeout = null;
 
+  // Formatter for widget timer with digit-slots to stabilize width
+  function formatTimerWidget(ms) {
+      if(ms === null || ms === undefined || ms < 0) return "--:--.--";
+      let date = new Date(ms);
+      let m = String(date.getUTCMinutes()).padStart(2, '0');
+      let s = String(date.getUTCSeconds()).padStart(2, '0');
+      let msStr = String(Math.floor(date.getUTCMilliseconds() / 10)).padStart(2, '0');
+      
+      let raw = `${m}:${s}.${msStr}`;
+      let html = '';
+      for(let char of raw) {
+          html += `<span class="digit-slot">${char}</span>`;
+      }
+      return html;
+  }
+
+  // Plain formatter for table cells to keep table layout locked
   function formatTime(ms) {
       if(ms === null || ms === undefined || ms < 0) return "--:--.--";
       let date = new Date(ms);
@@ -252,7 +279,7 @@
             // Priority 1: Sort by Final Total Time if available (Fastest first)
             if (a.totalTimeMs !== null && b.totalTimeMs !== null) return a.totalTimeMs - b.totalTimeMs;
             if (a.totalTimeMs !== null) return -1;
-            if (a.totalTimeMs !== null) return 1;
+            if (b.totalTimeMs !== null) return 1;
 
             // Priority 2: Sort by Coding Time if currently in Coding Phase (Fastest first)
             if (a.codingTimeMs !== null && b.codingTimeMs !== null) return a.codingTimeMs - b.codingTimeMs;
@@ -296,7 +323,7 @@
               clearInterval(publicTimerInterval);
               publicTimerInterval = setInterval(() => {
                   if (!toastTimeout) { 
-                      ui.innerText = formatTime(getGlobalElapsedCodingTime());
+                      ui.innerHTML = formatTimerWidget(getGlobalElapsedCodingTime());
                   }
               }, 50);
           } else {
@@ -306,7 +333,7 @@
                   ui.className = "public-timer-display";
                   ui.style.color = "var(--gold-accent)";
                   ui.style.textShadow = "0 0 10px rgba(230,168,0,0.5)";
-                  ui.innerText = formatTime(getGlobalElapsedCodingTime());
+                  ui.innerHTML = formatTimerWidget(getGlobalElapsedCodingTime());
               }
           }
       } else {
