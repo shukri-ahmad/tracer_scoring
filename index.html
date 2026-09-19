@@ -184,7 +184,6 @@
   let previousTeamsMap = {};
   let toastTimeout = null;
 
-  // Formatter for widget timer with digit-slots to stabilize width
   function formatTimerWidget(ms) {
       if(ms === null || ms === undefined || ms < 0) return "--:--.--";
       let date = new Date(ms);
@@ -200,7 +199,6 @@
       return html;
   }
 
-  // Plain formatter for table cells to keep table layout locked
   function formatTime(ms) {
       if(ms === null || ms === undefined || ms < 0) return "--:--.--";
       let date = new Date(ms);
@@ -295,6 +293,9 @@
   };
 
   function renderPublicTimer() {
+      // If a finish toast banner is actively showing, defer timer changes until toast completes
+      if (toastTimeout) return;
+
       const box = document.getElementById("publicTimerBox");
       const title = document.getElementById("publicTimerTitle");
       const ui = document.getElementById("publicTimerDisplay");
@@ -313,12 +314,9 @@
 
           if (isRunning) {
               title.innerText = "GLOBAL CODING PHASE - IN PROGRESS";
-              
-              if (!toastTimeout) {
-                  ui.className = "public-timer-display";
-                  ui.style.color = "var(--neon-green)";
-                  ui.style.textShadow = "0 0 15px rgba(0,255,136,0.5)";
-              }
+              ui.className = "public-timer-display";
+              ui.style.color = "var(--neon-green)";
+              ui.style.textShadow = "0 0 15px rgba(0,255,136,0.5)";
               
               clearInterval(publicTimerInterval);
               publicTimerInterval = setInterval(() => {
@@ -329,12 +327,10 @@
           } else {
               clearInterval(publicTimerInterval);
               title.innerText = "GLOBAL CODING PHASE - PAUSED";
-              if (!toastTimeout) {
-                  ui.className = "public-timer-display";
-                  ui.style.color = "var(--gold-accent)";
-                  ui.style.textShadow = "0 0 10px rgba(230,168,0,0.5)";
-                  ui.innerHTML = formatTimerWidget(getGlobalElapsedCodingTime());
-              }
+              ui.className = "public-timer-display";
+              ui.style.color = "var(--gold-accent)";
+              ui.style.textShadow = "0 0 10px rgba(230,168,0,0.5)";
+              ui.innerHTML = formatTimerWidget(getGlobalElapsedCodingTime());
           }
       } else {
           clearInterval(publicTimerInterval);
@@ -356,7 +352,7 @@
 
       if (toastTimeout) clearTimeout(toastTimeout);
 
-      // Revert back to timer after 4 seconds
+      // Revert back or hide after 4 seconds
       toastTimeout = setTimeout(() => {
           toastTimeout = null;
           ui.className = "public-timer-display";
