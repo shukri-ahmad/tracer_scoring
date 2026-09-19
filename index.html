@@ -63,18 +63,20 @@
             white-space: nowrap;
         }
 
-        /* Banner popup when team finishes coding */
+        /* FIX: High contrast black text on neon green banner */
         .public-timer-toast {
             font-size: 1.8em;
             font-family: 'Orbitron', sans-serif;
             font-weight: 900;
-            color: #000;
+            color: #0d1117 !important; /* Force dark text color */
             background: var(--neon-green);
-            padding: 10px;
+            padding: 10px 15px;
             border-radius: 6px;
             box-shadow: 0 0 20px var(--neon-green);
             text-transform: uppercase;
             letter-spacing: 1px;
+            margin-top: 8px;
+            display: inline-block;
             animation: pulseGlow 1s infinite alternate;
         }
 
@@ -250,7 +252,7 @@
             // Priority 1: Sort by Final Total Time if available (Fastest first)
             if (a.totalTimeMs !== null && b.totalTimeMs !== null) return a.totalTimeMs - b.totalTimeMs;
             if (a.totalTimeMs !== null) return -1;
-            if (b.totalTimeMs !== null) return 1;
+            if (a.totalTimeMs !== null) return 1;
 
             // Priority 2: Sort by Coding Time if currently in Coding Phase (Fastest first)
             if (a.codingTimeMs !== null && b.codingTimeMs !== null) return a.codingTimeMs - b.codingTimeMs;
@@ -284,21 +286,28 @@
 
           if (isRunning) {
               title.innerText = "GLOBAL CODING PHASE - IN PROGRESS";
-              ui.style.color = "var(--neon-green)";
-              ui.style.textShadow = "0 0 15px rgba(0,255,136,0.5)";
+              
+              if (!toastTimeout) {
+                  ui.className = "public-timer-display";
+                  ui.style.color = "var(--neon-green)";
+                  ui.style.textShadow = "0 0 15px rgba(0,255,136,0.5)";
+              }
               
               clearInterval(publicTimerInterval);
               publicTimerInterval = setInterval(() => {
-                  if (!toastTimeout) { // Only update if toast isn't overriding display
+                  if (!toastTimeout) { 
                       ui.innerText = formatTime(getGlobalElapsedCodingTime());
                   }
               }, 50);
           } else {
               clearInterval(publicTimerInterval);
               title.innerText = "GLOBAL CODING PHASE - PAUSED";
-              ui.style.color = "var(--gold-accent)";
-              ui.style.textShadow = "0 0 10px rgba(230,168,0,0.5)";
-              if (!toastTimeout) ui.innerText = formatTime(getGlobalElapsedCodingTime());
+              if (!toastTimeout) {
+                  ui.className = "public-timer-display";
+                  ui.style.color = "var(--gold-accent)";
+                  ui.style.textShadow = "0 0 10px rgba(230,168,0,0.5)";
+                  ui.innerText = formatTime(getGlobalElapsedCodingTime());
+              }
           }
       } else {
           clearInterval(publicTimerInterval);
@@ -314,9 +323,9 @@
       box.style.display = "block";
       
       // Temporarily override display with banner
-      title.innerText = "⚡ UNIT CODING FINISHED!";
+      title.innerText = "⚡ UNIT CODING COMPLETED!";
       ui.className = "public-timer-toast";
-      ui.innerText = `${teamName}: ${formatTime(timeMs)}`;
+      ui.innerText = `${teamName} : ${formatTime(timeMs)}`;
 
       if (toastTimeout) clearTimeout(toastTimeout);
 
