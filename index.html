@@ -26,64 +26,32 @@
         .logo-container { text-align: center; margin-bottom: 10px; }
         .logo-container img { max-width: 220px; filter: drop-shadow(0 0 10px rgba(230,168,0,0.3)); }
         
-        .header-links { text-align: right; margin-bottom: 10px; }
+        .header-links { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .header-links a { color: var(--gold-accent); text-decoration: none; font-weight: bold; font-family: 'Orbitron', sans-serif; font-size: 14px; text-transform: uppercase; transition: color 0.3s;}
         .header-links a:hover { color: var(--neon-green); text-shadow: 0 0 8px var(--neon-green); }
         
+        .audio-btn { background: #1f4179; color: white; border: 1px solid #79c0ff; padding: 5px 15px; font-family: 'Orbitron', sans-serif; font-size: 12px; font-weight: bold; cursor: pointer; border-radius: 4px; transition: 0.3s; }
+        .audio-btn:hover { background: var(--neon-green); color: black; border-color: var(--neon-green); }
+        .audio-btn.active { background: rgba(39, 174, 96, 0.2); color: var(--neon-green); border-color: var(--neon-green); }
+
         .game-selector { text-align: center; margin-bottom: 20px; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 8px; border: 1px solid #30363d; }
         .game-selector select { padding: 10px; font-size: 16px; border-radius: 4px; font-weight: bold; width: 50%; background: #0d1117; color: white; border: 1px solid var(--border-glow); font-family: 'Rajdhani', sans-serif; }
 
-        /* Public Live Widgets */
-        .public-timer-box {
-            display: none;
-            text-align: center;
-            background: #0d1117;
-            padding: 15px 20px;
-            border: 2px solid var(--border-glow);
-            border-radius: 8px;
-            margin-bottom: 20px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.5);
-            transition: border-color 0.3s ease, background 0.3s ease;
-        }
-
+        .public-timer-box { display: none; text-align: center; background: #0d1117; padding: 15px 20px; border: 2px solid var(--border-glow); border-radius: 8px; margin-bottom: 20px; box-shadow: 0 0 15px rgba(0,0,0,0.5); transition: border-color 0.3s ease, background 0.3s ease; }
         .public-timer-title { font-family: 'Orbitron', sans-serif; font-size: 14px; color: var(--gold-accent); letter-spacing: 2px; text-transform: uppercase; }
-
-        .public-timer-display {
-            font-size: 3em; font-family: 'Orbitron', monospace; font-weight: 900; margin: 5px 0 0 0;
-            display: inline-flex; justify-content: center; align-items: center; white-space: nowrap;
-        }
+        .public-timer-display { font-size: 3em; font-family: 'Orbitron', monospace; font-weight: 900; margin: 5px 0 0 0; display: inline-flex; justify-content: center; align-items: center; white-space: nowrap; }
         .public-timer-display .digit-slot { display: inline-block; width: 0.75em; text-align: center; }
 
         .race-widget-border { border-color: var(--cyan-glow); box-shadow: 0 0 20px rgba(0, 229, 255, 0.3); animation: pulseWidget 1.5s infinite alternate; }
         .race-widget-title { color: var(--cyan-glow); }
         .race-widget-timer { color: white; text-shadow: 0 0 15px var(--cyan-glow); }
+        @keyframes pulseWidget { from { box-shadow: 0 0 10px rgba(0, 229, 255, 0.2); } to { box-shadow: 0 0 25px rgba(0, 229, 255, 0.5); } }
 
-        @keyframes pulseWidget {
-            from { box-shadow: 0 0 10px rgba(0, 229, 255, 0.2); }
-            to { box-shadow: 0 0 25px rgba(0, 229, 255, 0.5); }
-        }
+        .public-timer-toast { font-size: 1.8em; font-family: 'Orbitron', sans-serif; font-weight: 900; color: #0d1117 !important; background: var(--neon-green); padding: 10px 15px; border-radius: 6px; box-shadow: 0 0 20px var(--neon-green); text-transform: uppercase; letter-spacing: 1px; margin-top: 8px; display: inline-block; animation: pulseGlow 1s infinite alternate; }
+        @keyframes pulseGlow { from { box-shadow: 0 0 10px var(--neon-green); } to { box-shadow: 0 0 25px var(--neon-green); } }
 
-        .public-timer-toast {
-            font-size: 1.8em; font-family: 'Orbitron', sans-serif; font-weight: 900; color: #0d1117 !important;
-            background: var(--neon-green); padding: 10px 15px; border-radius: 6px; box-shadow: 0 0 20px var(--neon-green);
-            text-transform: uppercase; letter-spacing: 1px; margin-top: 8px; display: inline-block; animation: pulseGlow 1s infinite alternate;
-        }
-
-        @keyframes pulseGlow {
-            from { box-shadow: 0 0 10px var(--neon-green); }
-            to { box-shadow: 0 0 25px var(--neon-green); }
-        }
-
-        .race-widget-toast {
-            font-size: 1.8em; font-family: 'Orbitron', sans-serif; font-weight: 900; color: #0d1117 !important;
-            background: var(--cyan-glow); padding: 10px 15px; border-radius: 6px; box-shadow: 0 0 20px var(--cyan-glow);
-            text-transform: uppercase; letter-spacing: 1px; margin-top: 8px; display: inline-block; animation: pulseCyan 1s infinite alternate;
-        }
-
-        @keyframes pulseCyan {
-            from { box-shadow: 0 0 10px rgba(0, 229, 255, 0.5); }
-            to { box-shadow: 0 0 25px rgba(0, 229, 255, 1); }
-        }
+        .race-widget-toast { font-size: 1.8em; font-family: 'Orbitron', sans-serif; font-weight: 900; color: #0d1117 !important; background: var(--cyan-glow); padding: 10px 15px; border-radius: 6px; box-shadow: 0 0 20px var(--cyan-glow); text-transform: uppercase; letter-spacing: 1px; margin-top: 8px; display: inline-block; animation: pulseCyan 1s infinite alternate; }
+        @keyframes pulseCyan { from { box-shadow: 0 0 10px rgba(0, 229, 255, 0.5); } to { box-shadow: 0 0 25px rgba(0, 229, 255, 1); } }
 
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 17px; }
         th, td { padding: 14px 10px; text-align: center; border-bottom: 1px solid #30363d; vertical-align: middle; transition: background 0.3s;}
@@ -113,7 +81,10 @@
 <body>
 
 <div class="container">
-    <div class="header-links"><a href="admin.html">[ ADMIN TERMINAL ]</a></div>
+    <div class="header-links">
+        <button id="audioToggleBtn" class="audio-btn" onclick="toggleAudio()">🔇 ENABLE AUDIO</button>
+        <a href="admin.html">[ ADMIN TERMINAL ]</a>
+    </div>
     
     <div class="logo-container">
         <img src="[FINAL] LOGO MAKEROBOT2026 (8)-Photoroom.png" alt="Makerobot Tracer Logo">
@@ -125,13 +96,11 @@
         <select id="publicGameSelect" onchange="loadSelectedGame()"><option>INITIALIZING...</option></select>
     </div>
 
-    <!-- Live Global Coding Timer for Public View -->
     <div id="publicTimerBox" class="public-timer-box">
         <div id="publicTimerTitle" class="public-timer-title">GLOBAL CODING PHASE</div>
         <div id="publicTimerDisplay" class="public-timer-display" style="color: var(--neon-green); text-shadow: 0 0 15px rgba(0,255,136,0.5);">00:00.00</div>
     </div>
 
-    <!-- Live Race Timer Widget -->
     <div id="raceTimerBox" class="public-timer-box race-widget-border">
         <div id="raceTimerTitle" class="public-timer-title race-widget-title">LIVE RUN: [TEAM]</div>
         <div id="raceTimerDisplay" class="public-timer-display race-widget-timer">00:00.00</div>
@@ -143,7 +112,7 @@
         <thead>
             <tr>
                 <th style="width: 8%;">RANK</th>
-                <th style="width: 25%; text-align: left; padding-left: 15px;">TEAM UNIT</th>
+                <th style="width: 25%; text-align: left; padding-left: 15px;">TEAM</th>
                 <th style="width: 15%;">CODING TIME</th>
                 <th style="width: 15%;">RACE TIME</th>
                 <th style="width: 17%;">MODIFIERS</th>
@@ -172,6 +141,39 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
+  // --- AUDIO ENGINE ---
+  let isAudioEnabled = false;
+  const sfxStart = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+  const sfxFinish = new Audio('https://actions.google.com/sounds/v1/ui/message_notification.ogg');
+  const sfxTick = new Audio('https://actions.google.com/sounds/v1/alarms/mechanical_clock_tick.ogg');
+  
+  sfxTick.loop = true;
+  sfxTick.volume = 0.2; // Keep the ticking subtle so it's not annoying
+  
+  window.toggleAudio = function() {
+      isAudioEnabled = !isAudioEnabled;
+      const btn = document.getElementById("audioToggleBtn");
+      if (isAudioEnabled) {
+          btn.innerText = "🔊 AUDIO ACTIVE";
+          btn.classList.add("active");
+          // Play a silent tick to unlock the browser audio context
+          sfxTick.play().then(() => sfxTick.pause()).catch(e => console.log("Audio unlock failed"));
+      } else {
+          btn.innerText = "🔇 ENABLE AUDIO";
+          btn.classList.remove("active");
+          sfxTick.pause();
+      }
+  };
+
+  function playSound(type) {
+      if (!isAudioEnabled) return;
+      if (type === 'start') { sfxStart.currentTime = 0; sfxStart.play(); sfxTick.play(); }
+      if (type === 'finish') { sfxTick.pause(); sfxFinish.currentTime = 0; sfxFinish.play(); }
+      if (type === 'tickStart') { sfxTick.play(); }
+      if (type === 'tickStop') { sfxTick.pause(); }
+  }
+  // -------------------
+
   let unsubGameDoc = null;
   let unsubTeams = null;
   let publicTimerInterval = null;
@@ -183,6 +185,7 @@
   let toastTimeout = null;
   let raceToastTimeout = null;
   let currentActiveRacer = null;
+  let wasGlobalCodingRunning = false;
 
   function formatTimerWidget(ms) {
       if(ms === null || ms === undefined || ms < 0) return "--:--.--";
@@ -190,12 +193,9 @@
       let m = String(date.getUTCMinutes()).padStart(2, '0');
       let s = String(date.getUTCSeconds()).padStart(2, '0');
       let msStr = String(Math.floor(date.getUTCMilliseconds() / 10)).padStart(2, '0');
-      
       let raw = `${m}:${s}.${msStr}`;
       let html = '';
-      for(let char of raw) {
-          html += `<span class="digit-slot">${char}</span>`;
-      }
+      for(let char of raw) { html += `<span class="digit-slot">${char}</span>`; }
       return html;
   }
 
@@ -221,15 +221,8 @@
       const selectElement = document.getElementById("publicGameSelect");
       const gamesSnap = await getDocs(collection(db, "tracer_games"));
       selectElement.innerHTML = "";
-      
-      if(gamesSnap.empty) {
-          selectElement.innerHTML = "<option>NO GAMES FOUND</option>";
-          return;
-      }
-
-      gamesSnap.forEach(docSnap => { 
-          selectElement.innerHTML += `<option value="${docSnap.id}">${docSnap.data().name}</option>`; 
-      });
+      if(gamesSnap.empty) { selectElement.innerHTML = "<option>NO GAMES FOUND</option>"; return; }
+      gamesSnap.forEach(docSnap => { selectElement.innerHTML += `<option value="${docSnap.id}">${docSnap.data().name}</option>`; });
       loadSelectedGame();
   }
   loadGamesList();
@@ -242,11 +235,26 @@
       if(unsubTeams) unsubTeams();
       clearInterval(publicTimerInterval);
       clearInterval(liveRaceInterval);
+      playSound('tickStop');
       
       previousTeamsMap = {};
+      wasGlobalCodingRunning = false;
 
       unsubGameDoc = onSnapshot(doc(db, "tracer_games", gameId), (docSnap) => {
           currentGameData = docSnap.data();
+          
+          // Audio Trigger Logic for Global Timer
+          const isGlobalRunning = currentGameData && currentGameData.codingStartTimestamp && !currentGameData.isCodingPaused && !currentGameData.isCodingLocked;
+          
+          if (isGlobalRunning && !wasGlobalCodingRunning) {
+              playSound('start'); // Global timer started
+              wasGlobalCodingRunning = true;
+          } else if (!isGlobalRunning && wasGlobalCodingRunning) {
+              if (currentGameData.isCodingLocked) playSound('finish'); // Global timer locked/finished
+              else playSound('tickStop'); // Global timer paused
+              wasGlobalCodingRunning = false;
+          }
+
           renderPublicTimer();
       });
 
@@ -276,33 +284,35 @@
             teams.push({ id: teamId, ...data });
         });
 
+        // Audio Trigger Logic for Race Phase & Individual Coding Finish
+        if (!currentActiveRacer && activeRacer) playSound('start'); // A team started their race
+        if (currentActiveRacer && !activeRacer && !newlyFinishedRaceTeam) playSound('tickStop'); // Race paused/cancelled
+        
         currentActiveRacer = activeRacer;
 
         if (newlyFinishedCodingTeam) {
+            playSound('finish'); // Beep for coding finish
             triggerFinishToast(newlyFinishedCodingTeam.name, newlyFinishedCodingTeam.timeMs);
         }
         if (newlyFinishedRaceTeam) {
+            playSound('finish'); // Beep for race finish
             triggerRaceFinishToast(newlyFinishedRaceTeam.name, newlyFinishedRaceTeam.timeMs);
         }
 
         renderLiveRaceWidget(activeRacer);
         
         teams.sort((a, b) => {
-            // 1. Incompletes strictly at the bottom
             if (a.isDQ && !b.isDQ) return 1;
             if (!a.isDQ && b.isDQ) return -1;
 
-            // 2. Sort by Attempt Round
             let attemptA = a.attempt || 1;
             let attemptB = b.attempt || 1;
             if (attemptA !== attemptB) return attemptA - attemptB;
 
-            // 3. Final Total Time
             if (a.totalTimeMs !== null && b.totalTimeMs !== null) return a.totalTimeMs - b.totalTimeMs;
             if (a.totalTimeMs !== null) return -1;
             if (b.totalTimeMs !== null) return 1;
 
-            // 4. Coding Time
             if (a.codingTimeMs !== null && b.codingTimeMs !== null) return a.codingTimeMs - b.codingTimeMs;
             if (a.codingTimeMs !== null) return -1;
             if (b.codingTimeMs !== null) return 1;
@@ -315,16 +325,9 @@
   };
 
   function renderLiveRaceWidget(activeRacer) {
-      if (!activeRacer) {
-          clearInterval(liveRaceInterval);
-      }
-
+      if (!activeRacer) clearInterval(liveRaceInterval);
       if (raceToastTimeout && !activeRacer) return; 
-
-      if (raceToastTimeout && activeRacer) {
-          clearTimeout(raceToastTimeout);
-          raceToastTimeout = null;
-      }
+      if (raceToastTimeout && activeRacer) { clearTimeout(raceToastTimeout); raceToastTimeout = null; }
 
       const raceBox = document.getElementById("raceTimerBox");
       const raceTitle = document.getElementById("raceTimerTitle");
@@ -364,7 +367,6 @@
       document.getElementById("publicTimerBox").style.display = "none";
 
       if (raceToastTimeout) clearTimeout(raceToastTimeout);
-
       raceToastTimeout = setTimeout(() => {
           raceToastTimeout = null;
           raceUI.className = "public-timer-display race-widget-timer";
@@ -400,9 +402,7 @@
               
               clearInterval(publicTimerInterval);
               publicTimerInterval = setInterval(() => {
-                  if (!toastTimeout) { 
-                      ui.innerHTML = formatTimerWidget(getGlobalElapsedCodingTime());
-                  }
+                  if (!toastTimeout) ui.innerHTML = formatTimerWidget(getGlobalElapsedCodingTime());
               }, 50);
           } else {
               clearInterval(publicTimerInterval);
@@ -427,12 +427,11 @@
 
       box.style.display = "block";
       
-      title.innerText = "⚡ UNIT CODING COMPLETED!";
+      title.innerText = "⚡ TEAM CODING COMPLETED!";
       ui.className = "public-timer-toast";
       ui.innerText = `${teamName} : ${formatTime(timeMs)}`;
 
       if (toastTimeout) clearTimeout(toastTimeout);
-
       toastTimeout = setTimeout(() => {
           toastTimeout = null;
           ui.className = "public-timer-display";
@@ -479,9 +478,7 @@
         else if (index === 0 && (team.totalTimeMs !== null || team.codingTimeMs !== null)) rowClass = "rank-1";
 
         let nameHtml = team.name;
-        if ((team.attempt || 1) > 1) {
-            nameHtml += ` <span class="mod-chip mod-round">R${team.attempt}</span>`;
-        }
+        if ((team.attempt || 1) > 1) nameHtml += ` <span class="mod-chip mod-round">R${team.attempt}</span>`;
 
         htmlBuffer += `
           <tr class="${rowClass}">
