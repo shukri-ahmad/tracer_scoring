@@ -65,7 +65,7 @@
         th { background: #0d1117; color: #8b949e; font-family: 'Orbitron', sans-serif; font-size: 14px;}
         .team-name { font-weight: bold; text-align: left; padding-left: 15px; color: white; font-size: 1.2em;}
         
-        .timer-display { font-family: 'Orbitron', monospace; font-size: 1.2em; font-weight: 700; background: #0d1117; padding: 6px 10px; border-radius: 4px; border: 1px solid #30363d; display: inline-flex; justify-content: center; align-items: center; white-space: nowrap; }
+        .timer-display { font-family: 'Orbitron', monospace; font-size: 1.2em; font-weight: 700; background: #0d1117; padding: 6px 10px; border-radius: 4px; border: 1px solid #30363d; display: inline-flex; justify-content: center; align-items: center; white-space: nowrap; margin: 0 auto;}
         .digit-slot { display: inline-block; width: 0.75em; text-align: center; }
 
         .global-timer-box { text-align: center; background: #0d1117; padding: 20px; border: 2px solid var(--border-glow); border-radius: 8px; margin-bottom: 20px; }
@@ -564,7 +564,7 @@
 
           tbody.innerHTML += `<tr>
               <td class="team-name">${team.name} ${attempt > 1 ? `[R${attempt}]` : ""}</td>
-              <td class="timer-display" style="color: ${team.codingTimeMs !== null ? 'var(--gold-accent)' : 'white'};">${timeDisplay}</td>
+              <td><div class="timer-display" style="color: ${team.codingTimeMs !== null ? 'var(--gold-accent)' : 'white'};">${timeDisplay}</div></td>
               <td>${actionBtn}</td>
           </tr>`;
       });
@@ -649,12 +649,14 @@
 
           tbody.innerHTML += `<tr>
               <td class="team-name" style="width: 30%;">${team.name} ${attempt > 1 ? `[R${attempt}]` : ""}</td>
-              <td class="timer-display" id="raceTime_${team.id}" style="color: ${timerColor};">${timeDisplay}</td>
-              <td style="display: flex; justify-content: center; align-items: center;">${raceControls}</td>
-              <td class="mod-controls">
-                  <button class="btn-green mod-btn" ${disMod} onclick="addModifier('${team.id}', 'points')">+ POINT <span class="mod-count">${team.points || 0}</span></button>
-                  <button class="btn-red mod-btn" ${disMod} onclick="addModifier('${team.id}', 'penalties')">+ PENALTY <span class="mod-count">${team.penalties || 0}</span></button>
-                  <button class="btn-manage mod-btn" ${disMod} title="Reset Mods" onclick="resetModifiers('${team.id}')" style="margin-left: 5px;">↺</button>
+              <td><div class="timer-display" id="raceTime_${team.id}" style="color: ${timerColor};">${timeDisplay}</div></td>
+              <td><div style="display: flex; justify-content: center; align-items: center;">${raceControls}</div></td>
+              <td>
+                  <div class="mod-controls">
+                      <button class="btn-green mod-btn" ${disMod} onclick="addModifier('${team.id}', 'points')">+ POINT <span class="mod-count">${team.points || 0}</span></button>
+                      <button class="btn-red mod-btn" ${disMod} onclick="addModifier('${team.id}', 'penalties')">+ PENALTY <span class="mod-count">${team.penalties || 0}</span></button>
+                      <button class="btn-manage mod-btn" ${disMod} title="Reset Mods" onclick="resetModifiers('${team.id}')" style="margin-left: 5px;">↺</button>
+                  </div>
               </td>
           </tr>`;
       });
