@@ -287,13 +287,12 @@
 
         renderLiveRaceWidget(activeRacer);
         
-        // --- REALTIME AUTO-SORTING (Includes DQ & Rounds logic) ---
         teams.sort((a, b) => {
-            // 1. DQs strictly at the bottom
+            // 1. Incompletes strictly at the bottom
             if (a.isDQ && !b.isDQ) return 1;
             if (!a.isDQ && b.isDQ) return -1;
 
-            // 2. Sort by Attempt Round (Lower is better: Round 1 beats Round 2)
+            // 2. Sort by Attempt Round
             let attemptA = a.attempt || 1;
             let attemptB = b.attempt || 1;
             if (attemptA !== attemptB) return attemptA - attemptB;
@@ -460,7 +459,7 @@
             codeStr = `<span style="opacity:0.5">${codeStr}</span>`;
             raceStr = "--:--.--";
             modHtml = `<span style="color:#6e7681">-</span>`;
-            totalHtml = `<span class="dq-box">DISQUALIFIED</span>`;
+            totalHtml = `<span class="dq-box">NOT COMPLETE</span>`;
         } else {
             if(team.points > 0) modHtml += `<span class="mod-chip mod-green">-${team.points * 10}s</span>`;
             if(team.penalties > 0) modHtml += `<span class="mod-chip mod-red">+${team.penalties * 10}s</span>`;
@@ -479,7 +478,6 @@
         else if (team.id === activeRacerId) rowClass = "active-racer-row";
         else if (index === 0 && (team.totalTimeMs !== null || team.codingTimeMs !== null)) rowClass = "rank-1";
 
-        // Display Round/Attempt Badge if > 1
         let nameHtml = team.name;
         if ((team.attempt || 1) > 1) {
             nameHtml += ` <span class="mod-chip mod-round">R${team.attempt}</span>`;
