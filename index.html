@@ -33,7 +33,7 @@
         .game-selector { text-align: center; margin-bottom: 20px; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 8px; border: 1px solid #30363d; }
         .game-selector select { padding: 10px; font-size: 16px; border-radius: 4px; font-weight: bold; width: 50%; background: #0d1117; color: white; border: 1px solid var(--border-glow); font-family: 'Rajdhani', sans-serif; }
 
-        /* Public Live Widgets (Coding & Race) */
+        /* Public Live Widgets */
         .public-timer-box {
             display: none;
             text-align: center;
@@ -46,32 +46,14 @@
             transition: border-color 0.3s ease, background 0.3s ease;
         }
 
-        .public-timer-title {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 14px;
-            color: var(--gold-accent);
-            letter-spacing: 2px;
-            text-transform: uppercase;
-        }
+        .public-timer-title { font-family: 'Orbitron', sans-serif; font-size: 14px; color: var(--gold-accent); letter-spacing: 2px; text-transform: uppercase; }
 
         .public-timer-display {
-            font-size: 3em;
-            font-family: 'Orbitron', monospace;
-            font-weight: 900;
-            margin: 5px 0 0 0;
-            display: inline-flex;
-            justify-content: center;
-            align-items: center;
-            white-space: nowrap;
+            font-size: 3em; font-family: 'Orbitron', monospace; font-weight: 900; margin: 5px 0 0 0;
+            display: inline-flex; justify-content: center; align-items: center; white-space: nowrap;
         }
+        .public-timer-display .digit-slot { display: inline-block; width: 0.75em; text-align: center; }
 
-        .public-timer-display .digit-slot {
-            display: inline-block;
-            width: 0.75em;
-            text-align: center;
-        }
-
-        /* Specific Race Phase Widget Styling */
         .race-widget-border { border-color: var(--cyan-glow); box-shadow: 0 0 20px rgba(0, 229, 255, 0.3); animation: pulseWidget 1.5s infinite alternate; }
         .race-widget-title { color: var(--cyan-glow); }
         .race-widget-timer { color: white; text-shadow: 0 0 15px var(--cyan-glow); }
@@ -81,21 +63,10 @@
             to { box-shadow: 0 0 25px rgba(0, 229, 255, 0.5); }
         }
 
-        /* Toast Popups */
         .public-timer-toast {
-            font-size: 1.8em;
-            font-family: 'Orbitron', sans-serif;
-            font-weight: 900;
-            color: #0d1117 !important;
-            background: var(--neon-green);
-            padding: 10px 15px;
-            border-radius: 6px;
-            box-shadow: 0 0 20px var(--neon-green);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-top: 8px;
-            display: inline-block;
-            animation: pulseGlow 1s infinite alternate;
+            font-size: 1.8em; font-family: 'Orbitron', sans-serif; font-weight: 900; color: #0d1117 !important;
+            background: var(--neon-green); padding: 10px 15px; border-radius: 6px; box-shadow: 0 0 20px var(--neon-green);
+            text-transform: uppercase; letter-spacing: 1px; margin-top: 8px; display: inline-block; animation: pulseGlow 1s infinite alternate;
         }
 
         @keyframes pulseGlow {
@@ -103,21 +74,10 @@
             to { box-shadow: 0 0 25px var(--neon-green); }
         }
 
-        /* Race Finish Toast (Cyan) */
         .race-widget-toast {
-            font-size: 1.8em;
-            font-family: 'Orbitron', sans-serif;
-            font-weight: 900;
-            color: #0d1117 !important;
-            background: var(--cyan-glow);
-            padding: 10px 15px;
-            border-radius: 6px;
-            box-shadow: 0 0 20px var(--cyan-glow);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-top: 8px;
-            display: inline-block;
-            animation: pulseCyan 1s infinite alternate;
+            font-size: 1.8em; font-family: 'Orbitron', sans-serif; font-weight: 900; color: #0d1117 !important;
+            background: var(--cyan-glow); padding: 10px 15px; border-radius: 6px; box-shadow: 0 0 20px var(--cyan-glow);
+            text-transform: uppercase; letter-spacing: 1px; margin-top: 8px; display: inline-block; animation: pulseCyan 1s infinite alternate;
         }
 
         @keyframes pulseCyan {
@@ -132,21 +92,20 @@
         .rank-1 { background: rgba(230, 168, 0, 0.15) !important; }
         .rank-1 td { color: #fff; font-weight: bold; text-shadow: 0 0 5px var(--gold-accent); }
         
-        /* Highlight the currently racing team row */
-        .active-racer-row { 
-            background: rgba(0, 229, 255, 0.15) !important; 
-            border-left: 3px solid var(--cyan-glow); 
-        }
+        .active-racer-row { background: rgba(0, 229, 255, 0.15) !important; border-left: 3px solid var(--cyan-glow); }
         .active-racer-row td { color: var(--cyan-glow); text-shadow: 0 0 8px rgba(0, 229, 255, 0.5); font-weight: bold; }
+        .dq-row td { opacity: 0.6; }
 
         .team-name { font-weight: bold; text-align: left; padding-left: 15px; font-size: 1.1em; color: white;}
         .time-font { font-family: 'Orbitron', monospace; font-weight: 700; font-size: 1.1em; white-space: nowrap; }
         .total-time-box { font-size: 1.2em; font-weight: bold; background: #0d1117; border: 1px solid var(--neon-green); border-radius: 4px; display: inline-block; padding: 6px 12px; color: var(--neon-green); text-shadow: 0 0 8px rgba(0,255,136,0.4); white-space: nowrap;}
         .pending-box { font-size: 0.9em; color: #6e7681; font-style: italic; white-space: nowrap;}
+        .dq-box { font-size: 1.1em; font-weight: bold; background: rgba(231, 36, 41, 0.1); border: 1px solid var(--red-gear); border-radius: 4px; display: inline-block; padding: 6px 12px; color: #ff7b72; white-space: nowrap;}
         
         .mod-chip { display: inline-block; font-size: 11px; padding: 2px 6px; border-radius: 4px; font-family: 'Orbitron', sans-serif; font-weight: bold; margin: 0;}
         .mod-green { background: rgba(39, 174, 96, 0.2); color: #2ecc71; border: 1px solid #27ae60;}
         .mod-red { background: rgba(231, 76, 60, 0.2); color: #e74c3c; border: 1px solid #c0392b;}
+        .mod-round { background: rgba(157, 78, 221, 0.2); color: #c77dff; border: 1px solid #9d4edd; margin-left: 8px;}
 
         .formula-text { text-align: center; font-size: 13px; color: #8b949e; margin-top: -5px; margin-bottom: 20px; font-weight: bold;}
     </style>
@@ -301,18 +260,15 @@
             let data = docSnap.data();
             let teamId = docSnap.id;
             
-            // Check for coding finish
             if (previousTeamsMap[teamId] && previousTeamsMap[teamId].codingTimeMs === null && data.codingTimeMs !== null) {
                 newlyFinishedCodingTeam = { name: data.name, timeMs: data.codingTimeMs };
             }
 
-            // Check for race finish
-            if (previousTeamsMap[teamId] && previousTeamsMap[teamId].raceTimeMs === null && data.raceTimeMs !== null) {
+            if (previousTeamsMap[teamId] && previousTeamsMap[teamId].raceTimeMs === null && data.raceTimeMs !== null && !data.isDQ) {
                 newlyFinishedRaceTeam = { name: data.name, timeMs: data.raceTimeMs };
             }
 
-            // Check if this team is actively running the race
-            if (data.raceStartTimestamp !== null) {
+            if (data.raceStartTimestamp !== null && !data.isDQ) {
                 activeRacer = { id: teamId, ...data };
             }
             
@@ -320,10 +276,8 @@
             teams.push({ id: teamId, ...data });
         });
 
-        // 1. Instantly Update Global Active Racer State
         currentActiveRacer = activeRacer;
 
-        // 2. Trigger Toasts (It will now correctly read the new state!)
         if (newlyFinishedCodingTeam) {
             triggerFinishToast(newlyFinishedCodingTeam.name, newlyFinishedCodingTeam.timeMs);
         }
@@ -331,15 +285,25 @@
             triggerRaceFinishToast(newlyFinishedRaceTeam.name, newlyFinishedRaceTeam.timeMs);
         }
 
-        // 3. Render the Active Live Race Widget
         renderLiveRaceWidget(activeRacer);
         
-        // --- REALTIME AUTO-SORTING ---
+        // --- REALTIME AUTO-SORTING (Includes DQ & Rounds logic) ---
         teams.sort((a, b) => {
+            // 1. DQs strictly at the bottom
+            if (a.isDQ && !b.isDQ) return 1;
+            if (!a.isDQ && b.isDQ) return -1;
+
+            // 2. Sort by Attempt Round (Lower is better: Round 1 beats Round 2)
+            let attemptA = a.attempt || 1;
+            let attemptB = b.attempt || 1;
+            if (attemptA !== attemptB) return attemptA - attemptB;
+
+            // 3. Final Total Time
             if (a.totalTimeMs !== null && b.totalTimeMs !== null) return a.totalTimeMs - b.totalTimeMs;
             if (a.totalTimeMs !== null) return -1;
             if (b.totalTimeMs !== null) return 1;
 
+            // 4. Coding Time
             if (a.codingTimeMs !== null && b.codingTimeMs !== null) return a.codingTimeMs - b.codingTimeMs;
             if (a.codingTimeMs !== null) return -1;
             if (b.codingTimeMs !== null) return 1;
@@ -352,15 +316,12 @@
   };
 
   function renderLiveRaceWidget(activeRacer) {
-      // Force clearing interval if nobody is actively racing
       if (!activeRacer) {
           clearInterval(liveRaceInterval);
       }
 
-      // If a race toast is actively showing AND no new race has started, let the toast finish
       if (raceToastTimeout && !activeRacer) return; 
 
-      // If a new race starts while a toast is still showing, override the toast immediately
       if (raceToastTimeout && activeRacer) {
           clearTimeout(raceToastTimeout);
           raceToastTimeout = null;
@@ -390,7 +351,6 @@
   }
 
   function triggerRaceFinishToast(teamName, timeMs) {
-      // Cancel toast if another team already started running!
       if (currentActiveRacer) return;
       
       const raceBox = document.getElementById("raceTimerBox");
@@ -402,7 +362,6 @@
       raceUI.className = "race-widget-toast";
       raceUI.innerText = `${teamName} : ${formatTime(timeMs)}`;
 
-      // Hide global timer just in case
       document.getElementById("publicTimerBox").style.display = "none";
 
       if (raceToastTimeout) clearTimeout(raceToastTimeout);
@@ -410,13 +369,13 @@
       raceToastTimeout = setTimeout(() => {
           raceToastTimeout = null;
           raceUI.className = "public-timer-display race-widget-timer";
-          renderLiveRaceWidget(currentActiveRacer); // Naturally drops the banner and checks if someone new started
+          renderLiveRaceWidget(currentActiveRacer); 
       }, 4000);
   }
 
   function renderPublicTimer() {
       if (toastTimeout) return; 
-      if (raceToastTimeout || currentActiveRacer) return; // Prevent overwriting race elements
+      if (raceToastTimeout || currentActiveRacer) return; 
 
       const box = document.getElementById("publicTimerBox");
       const title = document.getElementById("publicTimerTitle");
@@ -494,30 +453,42 @@
       teams.forEach((team, index) => {
         let codeStr = formatTime(team.codingTimeMs);
         let raceStr = formatTime(team.raceTimeMs);
-
         let modHtml = "";
-        if(team.points > 0) modHtml += `<span class="mod-chip mod-green">-${team.points * 10}s</span>`;
-        if(team.penalties > 0) modHtml += `<span class="mod-chip mod-red">+${team.penalties * 10}s</span>`;
-        if(!modHtml) modHtml = `<span style="color:#6e7681">-</span>`;
+        let totalHtml = "";
 
-        let totalHtml = team.totalTimeMs !== null 
-            ? `<span class="total-time-box time-font">${formatTime(team.totalTimeMs)}</span>` 
-            : `<span class="pending-box">IN PROGRESS</span>`;
+        if (team.isDQ) {
+            codeStr = `<span style="opacity:0.5">${codeStr}</span>`;
+            raceStr = "--:--.--";
+            modHtml = `<span style="color:#6e7681">-</span>`;
+            totalHtml = `<span class="dq-box">DISQUALIFIED</span>`;
+        } else {
+            if(team.points > 0) modHtml += `<span class="mod-chip mod-green">-${team.points * 10}s</span>`;
+            if(team.penalties > 0) modHtml += `<span class="mod-chip mod-red">+${team.penalties * 10}s</span>`;
+            if(!modHtml) modHtml = `<span style="color:#6e7681">-</span>`;
+
+            totalHtml = team.totalTimeMs !== null 
+                ? `<span class="total-time-box time-font">${formatTime(team.totalTimeMs)}</span>` 
+                : `<span class="pending-box">IN PROGRESS</span>`;
+        }
 
         let codeColor = team.codingTimeMs !== null ? 'var(--gold-accent)' : '#8b949e';
         let raceColor = team.raceTimeMs !== null ? 'var(--gold-accent)' : '#8b949e';
         
         let rowClass = "";
-        if (team.id === activeRacerId) {
-            rowClass = "active-racer-row";
-        } else if (index === 0 && (team.totalTimeMs !== null || team.codingTimeMs !== null)) {
-            rowClass = "rank-1";
+        if (team.isDQ) rowClass = "dq-row";
+        else if (team.id === activeRacerId) rowClass = "active-racer-row";
+        else if (index === 0 && (team.totalTimeMs !== null || team.codingTimeMs !== null)) rowClass = "rank-1";
+
+        // Display Round/Attempt Badge if > 1
+        let nameHtml = team.name;
+        if ((team.attempt || 1) > 1) {
+            nameHtml += ` <span class="mod-chip mod-round">R${team.attempt}</span>`;
         }
 
         htmlBuffer += `
           <tr class="${rowClass}">
             <td class="time-font" style="color: white;">${index + 1}</td>
-            <td class="team-name">${team.name}</td>
+            <td class="team-name">${nameHtml}</td>
             <td class="time-font" style="color: ${codeColor}">${codeStr}</td>
             <td class="time-font" style="color: ${raceColor}">${raceStr}</td>
             <td><div style="display: flex; justify-content: center; align-items: center; gap: 4px;">${modHtml}</div></td>
