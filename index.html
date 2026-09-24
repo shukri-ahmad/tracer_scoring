@@ -141,19 +141,15 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  // --- BULLETPROOF WEB AUDIO SYNTHESIZER ---
+  // --- EXTENDED WEB AUDIO SYNTHESIZER ---
   let isAudioEnabled = false;
   let audioCtx = null;
   let isTicking = false;
   let tickTimer = null;
 
   function initAudio() {
-      if (!audioCtx) {
-          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      }
-      if (audioCtx.state === 'suspended') {
-          audioCtx.resume();
-      }
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
   }
 
   window.toggleAudio = function() {
@@ -163,7 +159,7 @@
           btn.innerText = "🔊 AUDIO ACTIVE";
           btn.classList.add("active");
           initAudio();
-          playStartSound(); // Quick test sound to confirm it's on
+          playStartSound(); 
           evaluateTickSound(); 
       } else {
           btn.innerText = "🔇 ENABLE AUDIO";
@@ -174,49 +170,78 @@
 
   function playStartSound() {
       if (!isAudioEnabled || !audioCtx) return;
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
+      const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+      osc.connect(gain); gain.connect(audioCtx.destination);
       osc.type = 'square';
       osc.frequency.setValueAtTime(800, audioCtx.currentTime);
       osc.frequency.setValueAtTime(1200, audioCtx.currentTime + 0.1);
       gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
-      osc.start(audioCtx.currentTime);
-      osc.stop(audioCtx.currentTime + 0.2);
+      osc.start(audioCtx.currentTime); osc.stop(audioCtx.currentTime + 0.2);
   }
 
   function playFinishSound() {
       if (!isAudioEnabled || !audioCtx) return;
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
+      const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+      osc.connect(gain); gain.connect(audioCtx.destination);
       osc.type = 'sine';
-      // Ascending Success Chime (C5 -> E5 -> G5 -> C6)
       osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); 
       osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1);
       osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2);
       osc.frequency.setValueAtTime(1046.50, audioCtx.currentTime + 0.3);
       gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.8);
-      osc.start(audioCtx.currentTime);
-      osc.stop(audioCtx.currentTime + 0.8);
+      osc.start(audioCtx.currentTime); osc.stop(audioCtx.currentTime + 0.8);
   }
 
   function playTick() {
       if (!isAudioEnabled || !audioCtx) return;
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
+      const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+      osc.connect(gain); gain.connect(audioCtx.destination);
       osc.type = 'triangle';
       osc.frequency.setValueAtTime(1200, audioCtx.currentTime);
       gain.gain.setValueAtTime(0.02, audioCtx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
-      osc.start(audioCtx.currentTime);
-      osc.stop(audioCtx.currentTime + 0.05);
+      osc.start(audioCtx.currentTime); osc.stop(audioCtx.currentTime + 0.05);
+  }
+
+  // NEW: Point Sound (Good / High Pitch Ding)
+  function playPointSound() {
+      if (!isAudioEnabled || !audioCtx) return;
+      const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(1200, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(1800, audioCtx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+      osc.start(audioCtx.currentTime); osc.stop(audioCtx.currentTime + 0.1);
+  }
+
+  // NEW: Penalty Sound (Bad / Low Buzzer)
+  function playPenaltySound() {
+      if (!isAudioEnabled || !audioCtx) return;
+      const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+      osc.start(audioCtx.currentTime); osc.stop(audioCtx.currentTime + 0.2);
+  }
+
+  // NEW: NC/DQ Sound (Very Bad / Descending Tones)
+  function playNCSound() {
+      if (!isAudioEnabled || !audioCtx) return;
+      const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(350, audioCtx.currentTime);
+      osc.frequency.setValueAtTime(250, audioCtx.currentTime + 0.2);
+      osc.frequency.setValueAtTime(150, audioCtx.currentTime + 0.4);
+      gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.8);
+      osc.start(audioCtx.currentTime); osc.stop(audioCtx.currentTime + 0.8);
   }
 
   function evaluateTickSound() {
@@ -303,17 +328,16 @@
       unsubGameDoc = onSnapshot(doc(db, "tracer_games", gameId), (docSnap) => {
           currentGameData = docSnap.data();
           
-          // Sound Trigger: Global Coding Phase changes
           const isGlobalRunning = currentGameData && currentGameData.codingStartTimestamp && !currentGameData.isCodingPaused && !currentGameData.isCodingLocked;
           
           if (isGlobalRunning && !wasGlobalCodingRunning) {
-              playStartSound(); // Global timer started or resumed
+              playStartSound(); 
           } else if (!isGlobalRunning && wasGlobalCodingRunning) {
-              if (currentGameData.isCodingLocked) playFinishSound(); // Global timer formally locked
+              if (currentGameData.isCodingLocked) playFinishSound(); 
           }
           wasGlobalCodingRunning = !!isGlobalRunning;
           
-          evaluateTickSound(); // Update ticking state
+          evaluateTickSound(); 
           renderPublicTimer();
       });
 
@@ -323,16 +347,28 @@
         let newlyFinishedRaceTeam = null;
         let activeRacer = null;
 
+        // Modifiers & NC Check
+        let gotPoint = false;
+        let gotPenalty = false;
+        let gotNC = false;
+
         snapshot.forEach(docSnap => {
             let data = docSnap.data();
             let teamId = docSnap.id;
             
-            if (previousTeamsMap[teamId] && previousTeamsMap[teamId].codingTimeMs === null && data.codingTimeMs !== null) {
-                newlyFinishedCodingTeam = { name: data.name, timeMs: data.codingTimeMs };
-            }
-
-            if (previousTeamsMap[teamId] && previousTeamsMap[teamId].raceTimeMs === null && data.raceTimeMs !== null && !data.isDQ) {
-                newlyFinishedRaceTeam = { name: data.name, timeMs: data.raceTimeMs };
+            // Check for previous state differences
+            if (previousTeamsMap[teamId]) {
+                if (previousTeamsMap[teamId].codingTimeMs === null && data.codingTimeMs !== null) {
+                    newlyFinishedCodingTeam = { name: data.name, timeMs: data.codingTimeMs };
+                }
+                if (previousTeamsMap[teamId].raceTimeMs === null && data.raceTimeMs !== null && !data.isDQ) {
+                    newlyFinishedRaceTeam = { name: data.name, timeMs: data.raceTimeMs };
+                }
+                
+                // Track points, penalties, and NC
+                if (data.points > previousTeamsMap[teamId].points) gotPoint = true;
+                if (data.penalties > previousTeamsMap[teamId].penalties) gotPenalty = true;
+                if (data.isDQ && !previousTeamsMap[teamId].isDQ) gotNC = true;
             }
 
             if (data.raceStartTimestamp !== null && !data.isDQ) {
@@ -343,15 +379,16 @@
             teams.push({ id: teamId, ...data });
         });
 
-        // Sound Trigger: Race Start
+        // Event Sound Triggers
         const isRaceStarting = activeRacer && (!currentActiveRacer || currentActiveRacer.id !== activeRacer.id);
         currentActiveRacer = activeRacer;
 
-        if (isRaceStarting) {
-            playStartSound(); 
-        }
+        if (isRaceStarting) playStartSound(); 
 
-        // Sound Trigger: Finishes
+        if (gotNC) playNCSound();
+        else if (gotPenalty) playPenaltySound();
+        else if (gotPoint) playPointSound();
+
         if (newlyFinishedCodingTeam) {
             playFinishSound(); 
             triggerFinishToast(newlyFinishedCodingTeam.name, newlyFinishedCodingTeam.timeMs);
@@ -361,7 +398,7 @@
             triggerRaceFinishToast(newlyFinishedRaceTeam.name, newlyFinishedRaceTeam.timeMs);
         }
 
-        evaluateTickSound(); // Verify if ticking should continue
+        evaluateTickSound(); 
         renderLiveRaceWidget(activeRacer);
         
         teams.sort((a, b) => {
