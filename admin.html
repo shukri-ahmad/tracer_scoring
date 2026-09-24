@@ -168,7 +168,7 @@
 
         <div style="display: flex; gap: 10px; margin-top: 30px;">
             <button id="finishRaceBtn" class="btn-red" onclick="lockRacePhase()" style="flex: 2; font-size: 16px;">🏁 FINISH RACE PHASE</button>
-            <button id="restartDQBtn" class="btn-primary" onclick="restartDQTeams()" style="flex: 1; font-size: 16px; background: var(--blue-gear);">🔄 RESTART DQ UNITS</button>
+            <button id="restartDQBtn" class="btn-primary" onclick="restartDQTeams()" style="flex: 1; font-size: 16px; background: var(--blue-gear);">🔄 RESTART INCOMPLETE UNITS</button>
         </div>
     </div>
 </div>
@@ -549,7 +549,7 @@
 
           if (team.isDQ) {
               timeDisplay = "--:--.--";
-              actionBtn = `<span style="color:var(--red-gear); font-family: 'Orbitron', sans-serif;">DISQUALIFIED</span>`;
+              actionBtn = `<span style="color:var(--red-gear); font-family: 'Orbitron', sans-serif;">NOT COMPLETE</span>`;
           } else if (attempt < currentMaxAttempt && team.totalTimeMs !== null) {
               actionBtn = `<span style="color:var(--neon-green); font-family: 'Orbitron', sans-serif;">PASSED (R${attempt})</span>`;
           } else if(currentGameData && currentGameData.isCodingLocked) {
@@ -610,11 +610,10 @@
           let disMod = "";
           let dqBtn = "";
 
-          // Ensure clearInterval happens aggressively for anything NOT currently running
           if (team.isDQ) {
-              timeDisplay = "DISQUALIFIED";
+              timeDisplay = "NOT COMPLETE";
               timerColor = "var(--red-gear)";
-              raceControls = `<button class="btn-manage" onclick="undoDQ('${team.id}')">↺ UNDO DQ</button>`;
+              raceControls = `<button class="btn-manage" onclick="undoDQ('${team.id}')">↺ UNDO NC</button>`;
               disMod = "disabled style='opacity:0.5; cursor:not-allowed;'";
               clearInterval(raceTimerIntervals[team.id]);
               delete raceTimerIntervals[team.id];
@@ -626,7 +625,7 @@
               clearInterval(raceTimerIntervals[team.id]);
               delete raceTimerIntervals[team.id];
           } else {
-              dqBtn = `<button class="btn-red" style="margin-left: 5px; padding: 5px 10px;" onclick="disqualifyTeam('${team.id}')">☠️ DQ</button>`;
+              dqBtn = `<button class="btn-red" style="margin-left: 5px; padding: 5px 10px;" onclick="disqualifyTeam('${team.id}')">❌ NC</button>`;
 
               if(isRaceLocked) {
                   timeDisplay = team.raceTimeMs !== null ? formatTime(team.raceTimeMs) : formatTime(0);
@@ -674,7 +673,7 @@
 
   // --- NEW DQ LOGIC ---
   window.disqualifyTeam = async function(teamId) {
-      if(!confirm("☠️ DISQUALIFY TEAM?\nThis will stop their race immediately and mark them as DQ.")) return;
+      if(!confirm("❌ MARK AS NOT COMPLETE?\nThis will stop their race immediately and mark them as Not Complete (NC).")) return;
       await updateDoc(doc(db, "tracer_games", currentGameId, "teams", teamId), { isDQ: true, raceStartTimestamp: null, raceTimeMs: null, totalTimeMs: null });
   };
 
@@ -684,8 +683,8 @@
 
   window.restartDQTeams = async function() {
       const dqTeams = currentTeamsList.filter(t => t.isDQ);
-      if(dqTeams.length === 0) return alert("NO DQ TEAMS TO RESTART.");
-      if(!confirm(`🔄 RESTART ${dqTeams.length} DQ TEAM(S) INTO ROUND ${currentMaxAttempt + 1}?\n\nSuccessful teams will remain locked. DQ teams will be sent back to the Coding Phase.`)) return;
+      if(dqTeams.length === 0) return alert("NO INCOMPLETE TEAMS TO RESTART.");
+      if(!confirm(`🔄 RESTART ${dqTeams.length} INCOMPLETE TEAM(S) INTO ROUND ${currentMaxAttempt + 1}?\n\nSuccessful teams will remain locked. Incomplete teams will be sent back to the Coding Phase.`)) return;
       
       let newAttempt = currentMaxAttempt + 1;
 
@@ -698,7 +697,7 @@
       });
       await Promise.all(promises);
 
-      alert(`NEW ROUND INITIATED: ATTEMPT ${newAttempt}\nSending DQ teams back to Coding Phase.`);
+      alert(`NEW ROUND INITIATED: ATTEMPT ${newAttempt}\nSending incomplete teams back to Coding Phase.`);
       switchTab('codeTab', document.getElementById('tabBtn2'));
   };
 
@@ -795,7 +794,7 @@
           let modStr = "";
 
           if (team.isDQ) {
-              totalStr = "DISQUALIFIED";
+              totalStr = "NOT COMPLETE";
               modStr = "-";
               raceStr = "--:--.--";
           } else {
