@@ -141,51 +141,99 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  // --- DETERMINISTIC AUDIO ENGINE ---
+  // --- BULLETPROOF WEB AUDIO SYNTHESIZER ---
   let isAudioEnabled = false;
-  const sfxStart = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
-  const sfxFinish = new Audio('https://actions.google.com/sounds/v1/ui/message_notification.ogg');
-  const sfxTick = new Audio('https://actions.google.com/sounds/v1/alarms/mechanical_clock_tick.ogg');
-  
-  sfxTick.loop = true;
-  sfxTick.volume = 0.2; // Keep ticking background subtle
-  
+  let audioCtx = null;
+  let isTicking = false;
+  let tickTimer = null;
+
+  function initAudio() {
+      if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+      }
+  }
+
   window.toggleAudio = function() {
       isAudioEnabled = !isAudioEnabled;
       const btn = document.getElementById("audioToggleBtn");
       if (isAudioEnabled) {
           btn.innerText = "🔊 AUDIO ACTIVE";
           btn.classList.add("active");
-          // Unlock browser audio context securely
-          sfxTick.play().then(() => sfxTick.pause()).catch(()=>{});
-          sfxStart.play().then(() => sfxStart.pause()).catch(()=>{});
-          sfxFinish.play().then(() => sfxFinish.pause()).catch(()=>{});
-          evaluateTickSound(); // Resume ticking instantly if phase is currently running
+          initAudio();
+          playStartSound(); // Quick test sound to confirm it's on
+          evaluateTickSound(); 
       } else {
           btn.innerText = "🔇 ENABLE AUDIO";
           btn.classList.remove("active");
-          sfxTick.pause();
+          evaluateTickSound(); 
       }
   };
 
-  function playSound(type) {
-      if (!isAudioEnabled) return;
-      if (type === 'start') { sfxStart.currentTime = 0; sfxStart.play().catch(()=>{}); }
-      if (type === 'finish') { sfxFinish.currentTime = 0; sfxFinish.play().catch(()=>{}); }
+  function playStartSound() {
+      if (!isAudioEnabled || !audioCtx) return;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+      osc.frequency.setValueAtTime(1200, audioCtx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+      osc.start(audioCtx.currentTime);
+      osc.stop(audioCtx.currentTime + 0.2);
+  }
+
+  function playFinishSound() {
+      if (!isAudioEnabled || !audioCtx) return;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.type = 'sine';
+      // Ascending Success Chime (C5 -> E5 -> G5 -> C6)
+      osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); 
+      osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1);
+      osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2);
+      osc.frequency.setValueAtTime(1046.50, audioCtx.currentTime + 0.3);
+      gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.8);
+      osc.start(audioCtx.currentTime);
+      osc.stop(audioCtx.currentTime + 0.8);
+  }
+
+  function playTick() {
+      if (!isAudioEnabled || !audioCtx) return;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(1200, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.02, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
+      osc.start(audioCtx.currentTime);
+      osc.stop(audioCtx.currentTime + 0.05);
   }
 
   function evaluateTickSound() {
-      if (!isAudioEnabled) return;
       const isGlobalRunning = currentGameData && currentGameData.codingStartTimestamp && !currentGameData.isCodingPaused && !currentGameData.isCodingLocked;
       const isRaceRunning = currentActiveRacer !== null;
+      const shouldTick = isAudioEnabled && (isGlobalRunning || isRaceRunning);
       
-      if (isGlobalRunning || isRaceRunning) {
-          if (sfxTick.paused) sfxTick.play().catch(()=>{});
-      } else {
-          if (!sfxTick.paused) sfxTick.pause();
+      if (shouldTick && !isTicking) {
+          isTicking = true;
+          playTick();
+          tickTimer = setInterval(playTick, 1000);
+      } else if (!shouldTick && isTicking) {
+          isTicking = false;
+          clearInterval(tickTimer);
       }
   }
-  // ----------------------------------
+  // ----------------------------------------------
 
   let unsubGameDoc = null;
   let unsubTeams = null;
@@ -206,7 +254,6 @@
       let m = String(date.getUTCMinutes()).padStart(2, '0');
       let s = String(date.getUTCSeconds()).padStart(2, '0');
       let msStr = String(Math.floor(date.getUTCMilliseconds() / 10)).padStart(2, '0');
-      
       let raw = `${m}:${s}.${msStr}`;
       let html = '';
       for(let char of raw) { html += `<span class="digit-slot">${char}</span>`; }
@@ -260,9 +307,9 @@
           const isGlobalRunning = currentGameData && currentGameData.codingStartTimestamp && !currentGameData.isCodingPaused && !currentGameData.isCodingLocked;
           
           if (isGlobalRunning && !wasGlobalCodingRunning) {
-              playSound('start'); // Global timer started or resumed
+              playStartSound(); // Global timer started or resumed
           } else if (!isGlobalRunning && wasGlobalCodingRunning) {
-              if (currentGameData.isCodingLocked) playSound('finish'); // Global timer formally locked
+              if (currentGameData.isCodingLocked) playFinishSound(); // Global timer formally locked
           }
           wasGlobalCodingRunning = !!isGlobalRunning;
           
@@ -296,25 +343,25 @@
             teams.push({ id: teamId, ...data });
         });
 
-        // Sound Trigger: Race Start Check
+        // Sound Trigger: Race Start
         const isRaceStarting = activeRacer && (!currentActiveRacer || currentActiveRacer.id !== activeRacer.id);
         currentActiveRacer = activeRacer;
 
         if (isRaceStarting) {
-            playSound('start'); // A team started running their race
+            playStartSound(); 
         }
 
         // Sound Trigger: Finishes
         if (newlyFinishedCodingTeam) {
-            playSound('finish'); 
+            playFinishSound(); 
             triggerFinishToast(newlyFinishedCodingTeam.name, newlyFinishedCodingTeam.timeMs);
         }
         if (newlyFinishedRaceTeam) {
-            playSound('finish');
+            playFinishSound();
             triggerRaceFinishToast(newlyFinishedRaceTeam.name, newlyFinishedRaceTeam.timeMs);
         }
 
-        evaluateTickSound(); // Evaluate if ticking should continue
+        evaluateTickSound(); // Verify if ticking should continue
         renderLiveRaceWidget(activeRacer);
         
         teams.sort((a, b) => {
